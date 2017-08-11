@@ -49,8 +49,8 @@ Now you should get api-key for agent registration. Log in to vulners.com, go to 
 Choose "scan" in scope menu and click "Generate new key". You will get an api-key, which look like this:
 **RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK**
 
-This key you'll need to write into agent configuration. You should use only one api key for all your agents. Agent configuration is located in file  /opt/vulners/conf/vulners.conf
-You should change parameter api_key in section agent. Here is example of config file:
+This key you'll need to write into agent configuration. You should use only one api key for all your agents. Agent configuration is located in file  /opt/vulners/conf/vulners.conf.
+Change parameter api_key in section agent. Here is example of config file:
 
 ```
 [main]
@@ -76,7 +76,7 @@ Agent is executed every 2 hours via crontask
 ## Advanced configuration
 
 ### http_proxy
-If host doesn't have direct access to the Interney, you may use parameter http_proxy for defining http proxy.
+If host doesn't have direct access to the Internet, you may use parameter http_proxy for defining http proxy.
 
 ### ipaddr, fqdn
 For matching corresponding server in reporting, vulners agent detect local ip address and fqdn of the host during first run. This values are written to parameter ipaddr and fqdn. If you are aware of private data leakage, you are able to set your own values for these paramaters. In that case they won't be overwritten by agent and will be used as a main.
