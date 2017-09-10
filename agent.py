@@ -244,7 +244,7 @@ class configReader():
         HTTP_PROXY = self.config["main"]["http_proxy"]
         API_HOST = self.config["agent"]["api_host"]
         DEBUG_ENABLE = self.config["main"]["debug"]
-        if DEBUG_ENABLE.tolower() == "true":
+        if DEBUG_ENABLE.lower() == "true":
             logger.setLevel(logging.DEBUG)
 
     def getItem(self, section, key):
