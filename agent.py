@@ -232,7 +232,7 @@ class configReader():
     def parseConfig(self):
         global HTTP_PROXY
         global API_HOST
-        self.config_parser = ConfigParser()
+        self.config_parser = ConfigParser(allow_no_value=True)
         self.config_parser.readfp(open(self.config_path))
 
         for section in self.config.keys():
@@ -253,7 +253,7 @@ class configReader():
     def setItem(self, section, key, value):
         self.config_parser.set(section, key, value)
         self.config[section][key] = value
-        with open(self.config_path, 'wb') as conf:
+        with open(self.config_path, 'w') as conf:
             self.config_parser.write(conf)
 
 
