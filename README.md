@@ -39,17 +39,17 @@ deb http://repo.vulners.com/debian jessie main
 ## Install packet:
 
 ### RHEL
-```yum install vulners-agent.noarch```
+```yum install vulners-agent```
 
 ### Debian 
-```apt-get update && apt-get install vulners-agent.noarch```
+```apt-get update && apt-get install vulners-agent```
 
 ## Agent configuration
 Now you should get api-key for agent registration. Log in to vulners.com, go to userinfo space https://vulners.com/userinfo. Then you should choose "apikey" section.
-Choose "scan" in scope menu and click "Generate new key". You will get an api-key, which look like this:
+Choose "scan" in scope menu and click "Generate new key". You will get an api-key, which looks like this:
 **RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK**
 
-This key you'll need to write into agent configuration. You should use only one api key for all your agents. Agent configuration is located in file  /opt/vulners/conf/vulners.conf.
+You'll need to write this key into agent configuration. You should use only one api key for all your agents. Agent configuration is located in file  /opt/vulners/conf/vulners.conf.
 Change parameter api_key in section agent. Here is example of config file:
 
 ```
@@ -71,7 +71,7 @@ During first run agent will automatically register with configured api_key and s
 
 After this you may look at scanning results at https://vulners.com/audit
 
-Agent is executed every 2 hours via crontask
+Agent is executed every 2 hours via crontask (file /etc/cron.d/vulners_cron)
 
 ## Advanced configuration
 
@@ -79,4 +79,4 @@ Agent is executed every 2 hours via crontask
 If host doesn't have direct access to the Internet, you may use parameter http_proxy for defining http proxy.
 
 ### ipaddr, fqdn
-For matching corresponding server in reporting, vulners agent detect local ip address and fqdn of the host during first run. This values are written to parameter ipaddr and fqdn. If you are aware of private data leakage, you are able to set your own values for these paramaters. In that case they won't be overwritten by agent and will be used as a main.
+For matching corresponding server in reporting, vulners agent detects local ip address and fqdn of the host during first run. This values are written to parameter ipaddr and fqdn. If you are aware of private data leakage, you are able to set your own values for these paramaters. In that case they won't be overwritten by agent and will be used as a main.

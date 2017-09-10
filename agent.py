@@ -5,7 +5,7 @@ import inspect
 import pkgutil
 import json
 import os
-import ConfigParser
+
 import logging
 import sys
 
@@ -13,6 +13,13 @@ try:
     import urllib.request as urllib2
 except ImportError:
     import urllib2
+
+
+try:
+    from ConfigParser import ConfigParser
+except ImportError:
+    from configparser import ConfigParser
+
 import scanModules
 
 
@@ -28,7 +35,12 @@ HTTP_PROXY = None
 API_HOST = None
 logfile = os.path.realpath(os.path.join(os.path.dirname(__file__),"logs/vulners.log"))
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s", filename=logfile)
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", filename=logfile)
+
+logger = logging.getLogger("main")
+
+
 
 def sendHttpRequest(url, payload):
     if HTTP_PROXY:
@@ -40,9 +52,9 @@ def sendHttpRequest(url, payload):
     req = urllib2.Request("https://%s%s" % (API_HOST, url))
     req.add_header('Content-Type', 'application/json')
     req.add_header('User-Agent', '%s-v%s' % (AGENT_TYPE, AGENT_VERSION))
-    logging.debug("Sending http request, url - %s, payload - %s", url, payload)
+    logger.debug("Sending http request, url - %s, payload - %s", url, payload)
     response = urllib2.urlopen(req, json.dumps(payload).encode('utf-8'))
-    logging.debug(json.dumps(payload).encode('utf-8'))
+    logger.debug(json.dumps(payload).encode('utf-8'))
     responseData = response.read()
     if isinstance(responseData, bytes):
         responseData = responseData.decode('utf8')
@@ -82,9 +94,9 @@ class scannerEngine():
         instance = self.getInstance()
         installedPackages = instance.getPkg()
         if systemInfo:
-            logging.debug("Host info - %s" % systemInfo)
-        logging.debug("OS Name - %s, OS Version - %s" % (instance.osFamily, instance.osVersion))
-        logging.debug("Total found packages: %s" % len(installedPackages))
+            logger.warn("Host info - %s" % systemInfo)
+        logger.warn("OS Name - %s, OS Version - %s" % (instance.osFamily, instance.osVersion))
+        logger.warn("Total found packages: %s" % len(installedPackages))
         if not installedPackages:
             return instance
         # Get vulnerability information
@@ -97,18 +109,18 @@ class scannerEngine():
         response = sendHttpRequest(url, payload)
         resultCode = response.get("result")
         if resultCode != "OK":
-            logging.error("Error - %s" % response.get('data').get('error'))
+            logger.error("Error - %s" % response.get('data').get('error'))
         else:
             vulnsFound = response.get('data').get('vulnerabilities')
             if not vulnsFound:
-                logging.debug("No vulnerabilities found")
+                logger.warn("No vulnerabilities found")
             else:
                 payload = {'id':vulnsFound}
                 allVulnsInfo = sendHttpRequest(VULNERS_LINKS['bulletin'], payload)
                 vulnInfoFound = allVulnsInfo['result'] == 'OK'
-                logging.debug("Vulnerable packages:")
+                logger.warn("Vulnerable packages:")
                 for package in response['data']['packages']:
-                    logging.debug(" "*4 + package)
+                    logger.debug(" "*4 + package)
                     packageVulns = []
                     for vulns in response['data']['packages'][package]:
                         if vulnInfoFound:
@@ -120,7 +132,7 @@ class scannerEngine():
                             packageVulns.append((vulns,0))
                     packageVulns = sorted(packageVulns, key=lambda x:x[1])
                     packageVulns = [" "*8 + x[0] for x in packageVulns]
-                    logging.debug("\n".join(packageVulns))
+                    logger.debug("\n".join(packageVulns))
 
         return instance
 
@@ -136,12 +148,12 @@ class agentEngine():
     def register(self):
         apiKey = self.getApiKey()
         if not apiKey:
-            logging.error("No APi key found, exiting")
+            logger.error("No APi key found, exiting")
             sys.exit()
 
         data = sendHttpRequest(VULNERS_LINKS['agentRegister'],{"apiKey":apiKey,"agentType":AGENT_TYPE,"agentVersion":AGENT_VERSION})
         if data.get("result") != "OK":
-            logging.error("Error during agent registration  - %s" % data.get("data",{}).get("error"))
+            logger.error("Error during agent registration  - %s" % data.get("data",{}).get("error"))
             sys.exit(1)
 
         agentId = data["data"]["agentId"]
@@ -190,7 +202,7 @@ class agentEngine():
 
         data = sendHttpRequest(VULNERS_LINKS['agentUpdate'],payload)
         if data["result"] != "OK":
-            logging.error("Error while update agent - %s" % data.get("data",{}).get("error"))
+            logger.error("Error while update agent - %s" % data.get("data",{}).get("error"))
             return False
         else:
             return True
@@ -213,14 +225,14 @@ class configReader():
                         {       "api_key": "",
                                    "api_host": "vulners.com",
                                    "agent_id": "",
-                                   "fqdn": "",
+                                       "fqdn": "",
                                      "ipaddr": ""}}
         self.parseConfig()
 
     def parseConfig(self):
         global HTTP_PROXY
         global API_HOST
-        self.config_parser = ConfigParser.ConfigParser()
+        self.config_parser = ConfigParser()
         self.config_parser.readfp(open(self.config_path))
 
         for section in self.config.keys():
@@ -231,6 +243,9 @@ class configReader():
                         self.config[section][k] = v
         HTTP_PROXY = self.config["main"]["http_proxy"]
         API_HOST = self.config["agent"]["api_host"]
+        DEBUG_ENABLE = self.config["main"]["debug"]
+        if DEBUG_ENABLE.tolower() == "true":
+            logger.setLevel(logging.DEBUG)
 
     def getItem(self, section, key):
         return self.config[section].get(key)
