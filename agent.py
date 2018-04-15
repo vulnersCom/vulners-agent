@@ -29,7 +29,7 @@ VULNERS_LINKS = {'pkgChecker':'/api/v3/agent/audit/',
                  'agentUpdate':'/api/v3/agent/update/'}
 
 
-AGENT_TYPE = "vulners_agent"
+AGENT_TYPE = "vulners-agent"
 AGENT_VERSION = "0.2"
 HTTP_PROXY = None
 API_HOST = None
@@ -51,7 +51,7 @@ def sendHttpRequest(url, payload):
         urllib2.install_opener(opener)
     req = urllib2.Request("https://%s%s" % (API_HOST, url))
     req.add_header('Content-Type', 'application/json')
-    req.add_header('User-Agent', '%s-v%s' % (AGENT_TYPE, AGENT_VERSION))
+    req.add_header('User-Agent', '%s/%s' % (AGENT_TYPE, AGENT_VERSION))
     logger.debug("Sending http request, url - %s, payload - %s", url, payload)
     response = urllib2.urlopen(req, json.dumps(payload).encode('utf-8'))
     logger.debug(json.dumps(payload).encode('utf-8'))
