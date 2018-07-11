@@ -8,7 +8,7 @@ from scanModules.linuxDetect import linuxDetect
 class rpmBasedDetect(linuxDetect):
     def __init__(self,sshPrefix):
         self.supportedFamilies = ('redhat', 'centos', 'oraclelinux',
-                                  'suse', 'fedora', 'ol', 'rhel')
+                                  'suse', 'fedora', 'ol', 'rhel', 'opensuse')
         super(rpmBasedDetect, self).__init__(sshPrefix)
 
     def osDetect(self):
@@ -33,6 +33,14 @@ class rpmBasedDetect(linuxDetect):
             osFamily = "rhel"
             osDetectionWeight = 60
             return (osVersion, osFamily, osDetectionWeight)
+
+        version = self.sshCommand("cat /etc/SuSE-release")
+        if version:
+            osVersion = re.search("VERSION = (\d+)", version).group(1)
+            osFamily = "opensuse"
+            osDetectionWeight = 70
+            return (osVersion, osFamily, osDetectionWeight)
+
 
 
     def getPkg(self):
