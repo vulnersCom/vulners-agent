@@ -9,7 +9,6 @@
 __author__ = "Kir Ermakov <isox@vulners.com>"
 import pkgutil
 import inspect
-from pip._internal import main as pip
 
 
 def get_inheritors(module, inheritor):
