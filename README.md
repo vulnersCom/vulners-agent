@@ -50,7 +50,7 @@ Now you should get api-key for agent registration. Log in to vulners.com, go to 
 Choose "scan" in scope menu and click "Generate new key". You will get an api-key, which looks like this:
 **RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK**
 
-You'll need to write this key into agent configuration. You should use only one api key for all your agents. Agent configuration is located in file  /etc/vulners/vulners_agent.conf
+You'll need to write this key into agent configuration. You should use only one api key for all your agents. Agent configuration is located in file /etc/vulners/vulners_agent.conf
 Change parameter api_key in section agent. Here is example of config file:
 
 ```
@@ -63,3 +63,18 @@ api_key = RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK
 During first run agent will automatically register with configured api_key 
 
 After this you may look at agent status and scanning results at https://vulners.com/audit
+
+## Advanced configuration
+
+Using /etc/vulners/vulners_agent.conf you can override part of the identification parameters.
+
+```
+[DEFAULT]
+api_key = RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK
+
+[Ticker]
+ip_address = 10.0.0.1
+fqdn = my.host.example.com
+mac_address = 00:01:02:03:04:06
+
+```
