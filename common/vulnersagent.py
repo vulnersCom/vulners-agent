@@ -14,7 +14,7 @@ from six import string_types
 class AgentAPI(vulners.Vulners):
 
     # Vulners API Hostname
-    vulners_hostname = "http://127.0.0.1:8000"
+    vulners_hostname = "https://vulners.com"
 
     # Default URL's for the Vulners API.
     # Extension for Agent interfaces.
