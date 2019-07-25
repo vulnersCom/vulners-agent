@@ -4,7 +4,7 @@
 
 Vulners Agent is open source agent, which provides vulnerability assessment for linux-based systems. Agent solution perfoms scanning with minimum commands for execution and as a result achieve extremely fast scan.  Agent is developed with Python and uses OS environment variables to detect used Python version.
 
-Agent gathers information about operating system, it's version and installed packages. These information is sent to vulners.com API and results can be viewed via [vulners.com audit result] (https://vulners.com/audit)
+Agent gathers information about operating system, it's version and installed packages. These information is sent to vulners.com API and results can be viewed via [vulners.com audit result](https://vulners.com/audit)
 
 ![Vulners Audit IP Summary](img/audit_ipsummary.png)
 
