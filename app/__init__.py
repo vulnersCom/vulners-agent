@@ -53,16 +53,6 @@ class ClientApplication(object):
         full_config = get_full_config(config_file)
         self.config = full_config.get(self.__class__.__name__, full_config.get('DEFAULT'))
         self.log.debug("Application %s: Global config loaded %s" % (self.__class__.__name__, self.config))
-        # Set up Vulners connection lib
-        AgentAPI.vulners_hostname = self.config.get('vulners_host') or 'https://vulners.com'
-        api_key = self.config.get('api_key')
-        try:
-            self.vulners = AgentAPI(api_key = api_key)
-        except requests.ConnectionError as connection_error:
-            message = 'Failed to establish connection to Vulners host at %s: %s' % (AgentAPI.vulners_hostname, connection_error)
-            self.log.error(message)
-            raise EnvironmentError('Failed to establish connection to Vulners host at %s' % AgentAPI.vulners_hostname)
-        self.log.debug("Application %s: Init Vulners API with key %s" % (self.__class__.__name__, api_key))
         self.application_list = inheritor_apps
         self.log.debug("Application %s: Inherited apps loaded as %s" % (self.__class__.__name__, inheritor_apps))
 
@@ -203,6 +193,22 @@ class ClientApplication(object):
             self.log.debug("Application %s: Random sleep: %s" % (self.__class__.__name__, random_sleep))
             self.countdown(random_sleep)
         #
+        # Set up Vulners connection lib
+        # It placed here buti not in __init__ because of /api/v3/apiKey/valid/ call
+        # Whet all agents all over the world are trying to check key for the validity - backend can die
+        # So it's lazy init AFTER run delay
+        AgentAPI.vulners_hostname = self.config.get('vulners_host') or 'https://vulners.com'
+        api_key = self.config.get('api_key')
+        try:
+            self.vulners = AgentAPI(api_key=api_key)
+        except requests.ConnectionError as connection_error:
+            message = 'Failed to establish connection to Vulners host at %s: %s' % (
+            AgentAPI.vulners_hostname, connection_error)
+            self.log.error(message)
+            raise EnvironmentError(
+                'Failed to establish connection to Vulners host at %s' % AgentAPI.vulners_hostname)
+        self.log.debug("Application %s: Init Vulners API with key %s" % (self.__class__.__name__, api_key))
+
         run_data = {
 
             'app_name':self.__class__.__name__,
