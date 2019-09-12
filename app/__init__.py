@@ -198,7 +198,8 @@ class ClientApplication(object):
             self.singletone_init()
         #
         if self.random_run_delay:
-            random_sleep = randint(0, 120)
+            # Delay up to 5 minutes for running app
+            random_sleep = randint(0, 60*5)
             self.log.debug("Application %s: Random sleep: %s" % (self.__class__.__name__, random_sleep))
             self.countdown(random_sleep)
         #
