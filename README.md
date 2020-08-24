@@ -24,6 +24,7 @@ name=Vulners Agent
 baseurl=https://repo.vulners.com/redhat/el6/
 enabled=1
 gpgcheck=1
+gpgkey=https://repo.vulners.com/pubkey.txt
 ```
 
 For rhel7:
@@ -33,6 +34,7 @@ name=Vulners Agent
 baseurl=https://repo.vulners.com/redhat/el7/
 enabled=1
 gpgcheck=1
+gpgkey=https://repo.vulners.com/pubkey.txt
 ```
 
 ### For debian-based linux:
