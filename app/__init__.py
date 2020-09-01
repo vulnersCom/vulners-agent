@@ -21,7 +21,6 @@ from random import randint
 import sys
 import os
 import tempfile
-import fcntl
 from six import string_types
 
 class ClientApplication(object):
@@ -104,6 +103,7 @@ class ClientApplication(object):
                         os.close(self.fd)
                         os.unlink(self.lockfile)
                 else:
+                    import fcntl
                     fcntl.lockf(self.fp, fcntl.LOCK_UN)
                     # os.close(self.fp)
                     if os.path.isfile(self.lockfile):

@@ -88,7 +88,7 @@ class Ticker(ClientApplication):
         self.log.debug("Agent ID: %s" % agent_id)
         ip_address, mac_address, fqdn = osdetect.get_ip_mac_fqdn()
         self.log.debug("IP Address detected as: '%s' with MAC '%s' and Hostname '%s'" % (ip_address, mac_address, fqdn))
-        os_name, os_version = osdetect.get_os_parameters()
+        os_name, os_version, os_family = osdetect.get_os_parameters()
         self.log.debug("OS Name: '%s' with version '%s'" % (os_name, os_version))
         update_result = self.vulners.agent_update(agent_id = agent_id,
                                                   agent_type = __agent_type__,
@@ -98,6 +98,7 @@ class Ticker(ClientApplication):
                                                   macaddress = self.config.get('mac_address') or mac_address,
                                                   os_name = os_name,
                                                   os_version = os_version,
+                                                  os_family = os_family,
                                                   interface_list=osdetect.get_interface_list(),
                                                   )
         if 'agent' not in update_result:

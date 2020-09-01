@@ -7,6 +7,7 @@
 #  All Rights Reserved.
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
+
 import distro
 from getmac import get_mac_address
 import socket
@@ -14,6 +15,8 @@ from common.oscommands import execute
 import ifaddr
 from collections import defaultdict
 import concurrent.futures
+import platform
+from common.stringops import remove_non_ascii
 
 
 LOOPBACK = ['127.0.0.1', '0:0:0:0:0:0:0:1']
@@ -21,6 +24,14 @@ LOOPBACK = ['127.0.0.1', '0:0:0:0:0:0:0:1']
 
 def get_os_parameters():
     # Gather meta information about the system
+
+    # Get OS family
+    platform_family = platform.system()
+
+    if platform_family == 'Windows':
+        from common.winutils import get_windows_data
+        win_version = get_windows_data()
+        return remove_non_ascii(win_version["name"]), win_version["version"], platform_family
 
     platform_id = distro.id()
     platform_version = distro.version()
@@ -34,7 +45,7 @@ def get_os_parameters():
         platform_version = os_params[1].split(":")[1].strip()
         return platform_id, platform_version
 
-    return platform_id, platform_version
+    return platform_id, platform_version, platform_family
 
 def get_interface_data(interface_name, ipaddress):
     macaddress = (get_mac_address(interface=interface_name) or get_mac_address(ip=ipaddress, network_request=True) or "NONE")
@@ -71,7 +82,9 @@ def get_interface_list():
                          interface_name in active_interfaces]
         for future in concurrent.futures.as_completed(app_exec_pool):
             interface_list.append(future.result())
-
+    for interface in interface_list:
+        for key in interface:
+            interface[key] = remove_non_ascii(interface[key])
     return interface_list
 
 def get_ip_mac_fqdn():

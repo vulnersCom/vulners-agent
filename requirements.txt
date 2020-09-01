@@ -9,3 +9,4 @@ arrow
 configparser
 futures
 pytz
+wmi

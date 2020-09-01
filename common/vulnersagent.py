@@ -42,7 +42,7 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("agent_version expected to be a string")
         return self.vulners_post_request('agent_register', {"agentType":agent_type, 'agentVersion':agent_version})
 
-    def agent_update(self, agent_id, agent_type, agent_version, ipaddress, fqdn, macaddress, os_name, os_version, interface_list):
+    def agent_update(self, agent_id, agent_type, agent_version, ipaddress, fqdn, macaddress, os_name, os_version, os_family, interface_list):
         """
         Tech Agent update information method
         :return: {"agent": agent dicted model}
@@ -63,6 +63,8 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("os_name expected to be a string")
         if not isinstance(os_version, string_types):
             raise TypeError("os_version expected to be a string")
+        if not isinstance(os_family, string_types):
+            raise TypeError("os_family expected to be a string")
         if not isinstance(interface_list, list):
             raise TypeError("interface_list expected to be a list")
         return self.vulners_post_request('agent_update', {"agentType":agent_type,
@@ -73,6 +75,7 @@ class AgentAPI(vulners.Vulners):
                                                               "macaddress":macaddress,
                                                               "OSName":os_name,
                                                               "OSVersion":os_version,
+                                                              "OSFamily":os_family,
                                                               "interfaces":interface_list,
                                                               })
 

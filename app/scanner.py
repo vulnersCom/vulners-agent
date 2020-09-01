@@ -43,22 +43,40 @@ class Scanner(ClientApplication):
                                                 package=packages)
         return scan_results
 
+    def windows_scan(self, os_name, os_version, os_data):
+        from common.winutils import get_windows_installed_software, get_windows_updates, get_windows_data
+        windows_data = get_windows_data()
+
+        missing_kb, missing_updates, installed_kb, installed_updates = get_windows_updates()
+        installed_software_list = get_windows_installed_software()
+
+        self.log.debug("Found missing KB's: %s" % missing_kb)
+        self.log.debug("Enumerated Windows Software List: %s" % installed_software_list)
+
+        return None
+
 
     def run(self):
         agent_id = self.get_var('agent_id', namespace='shared')
         if not agent_id:
             raise AssertionError("Can't run Scanner app without registered agent_id. Is Ticker online?")
-        os_name, os_version = osdetect.get_os_parameters()
-        self.log.debug("OS Detection complete: %s %s" % (os_name, os_version))
+        os_name, os_version, os_family = osdetect.get_os_parameters()
+        self.log.debug("OS Detection complete: %s %s %s" % (os_name, os_version, os_family))
 
-        supported_os_lib = self.vulners.supported_os()['supported']
+        # If it's not a Windows OS check for the compatibility
+        if not os_family == 'Windows':
+            supported_os_lib = self.vulners.supported_os()['supported']
 
-        # Exit if OS is not supported in any way
-        if os_name not in supported_os_lib:
-            self.log.error("Can't perform scan request: Unknown OS %s. Supported os list: %s" % (os_name, supported_os_lib))
-            return
+            # Exit if OS is not supported in any way
+            if os_name not in supported_os_lib:
+                self.log.error("Can't perform scan request: Unknown OS %s. Supported os list: %s" % (os_name, supported_os_lib))
+                return
 
-        os_data = supported_os_lib[os_name]
+            os_data = supported_os_lib[os_name]
+        else:
+            os_data = {
+                "osType":'windows'
+            }
 
         if not hasattr(self, "%s_scan" % os_data['osType']) or not callable(getattr(self, "%s_scan" % os_data['osType'], None)):
             self.log.error("Can't scan this type of os: %s - no suitable scan method fount" % os_data['osType'])
