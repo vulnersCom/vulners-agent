@@ -8,20 +8,21 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
+import os
+import sys
 import logging
-from common.vulnersagent import AgentAPI
-from common.configreader import get_full_config
 import base64
 import json
-from common.path import DATA_PATH
 import requests
 import zlib
 import time
-from random import randint
-import sys
-import os
 import tempfile
+from common.vulnersagent import AgentAPI
+from common.configreader import get_full_config
+from common.path import DATA_PATH
+from random import randint
 from six import string_types
+
 
 class ClientApplication(object):
 
@@ -29,8 +30,9 @@ class ClientApplication(object):
     singletone = False
     random_run_delay = True
 
-    def __init__(self, config_file, log_level, log_path, inheritor_apps):
+    def __init__(self, config_file, log_level, log_path, inheritor_apps, ignore_proxy):
         self.initialized = False
+        self.ignore_proxy = ignore_proxy
         # Set up logger namespace and levels
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.propagate = False
@@ -110,7 +112,6 @@ class ClientApplication(object):
                         os.unlink(self.lockfile)
             except Exception as exc:
                 self.log.error("Application %s: %s" % (self.__class__.__name__, exc))
-
 
     def apps(self, app_name):
         if app_name not in self.application_list:
@@ -199,8 +200,17 @@ class ClientApplication(object):
         # So it's lazy init AFTER run delay
         AgentAPI.vulners_hostname = self.config.get('vulners_host') or 'https://vulners.com'
         api_key = self.config.get('api_key')
+        agent_params = {'api_key': api_key}
+
+        if self.ignore_proxy is False:
+            agent_params.update({
+                'proxies': {
+                    'http': self.config.get('http_proxy') or os.environ.get('HTTP_PROXY'),
+                    'https': self.config.get('https_proxy') or os.environ.get('HTTPS_PROXY')
+                }
+            })
         try:
-            self.vulners = AgentAPI(api_key=api_key)
+            self.vulners = AgentAPI(**agent_params)
         except requests.ConnectionError as connection_error:
             message = 'Failed to establish connection to Vulners host at %s: %s' % (
             AgentAPI.vulners_hostname, connection_error)
@@ -210,14 +220,13 @@ class ClientApplication(object):
         self.log.debug("Application %s: Init Vulners API with key %s" % (self.__class__.__name__, api_key))
 
         run_data = {
-
-            'app_name':self.__class__.__name__,
-            'run_parameters':parameters,
-            'run_result':None,
-            'success':False,
-            'exception':None,
-            'exectime':0,
-            }
+            'app_name': self.__class__.__name__,
+            'run_parameters': parameters,
+            'run_result': None,
+            'success': False,
+            'exception': None,
+            'exectime': 0,
+        }
 
         start_time = int(round(time.time() * 1000))
         try:

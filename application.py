@@ -9,19 +9,22 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
+import app
 from common.path import PROJECT_ROOT_PATH
 from common.extargparse import *
-import app
 from common.modloader import get_inheritors
+
 
 def available_apps(app_name):
 
     available_applications = get_inheritors(app, app.ClientApplication)
-    if not app_name in available_applications:
-        message = 'invalid file path: {0} Error: {1}'.format(app_name,
-                                                             "Application do not exist. Available apps: %s" % ', '.join(available_applications.keys()))
+    if app_name not in available_applications:
+        message = 'invalid file path: {0} Error: {1}'.format(
+            app_name, "Application do not exist. Available apps: %s" % ', '.join(available_applications.keys())
+        )
         raise argparse.ArgumentTypeError(message)
     return app_name
+
 
 if __name__ == "__main__":
 
@@ -33,26 +36,32 @@ if __name__ == "__main__":
                         help='Application log file to save logger output')
 
     default_config_dir = os.path.join(PROJECT_ROOT_PATH, 'config', 'vulners_agent.conf')
-    parser.add_argument('--config', type=config_file_exists_accessible, nargs='?', default = default_config_dir,
+    parser.add_argument('--config', type=config_file_exists_accessible, nargs='?', default=default_config_dir,
                         help='Application config file location')
 
     parser.add_argument('--app', type=available_apps, nargs='?', default=None, required=True,
                         help='Application name to run')
 
-    parser.add_argument("--params", dest="parameters", action=StoreDictKeyPair, nargs="+", metavar="KEY=VAL", default={})
+    parser.add_argument("--params", dest="parameters", action=StoreDictKeyPair, nargs="+",
+                        metavar="KEY=VAL", default={})
+
+    parser.add_argument('--ignore-proxy', default=False, const=True, nargs='?',
+                        help='Ignore proxy configuration and environment')
 
     args = parser.parse_args()
 
     # Initialize applications
     inheritors = get_inheritors(app, app.ClientApplication)
     initialized_inheritors = {}
-    init_args = {
 
+    init_args = {
         'config_file': args.config,
         'log_level': args.loglevel,
         'log_path': args.logpath,
+        'ignore_proxy': args.ignore_proxy,
         'inheritor_apps': inheritors,
     }
+
     for app_name in inheritors:
         inheritors[app_name] = inheritors[app_name](**init_args)
     current_application = inheritors[args.app]
