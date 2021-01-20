@@ -1,4 +1,4 @@
-#! /usr/bin/env python3.6
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #  VULNERS OPENSOURCE
@@ -10,7 +10,7 @@
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
 import app
-from common.path import PROJECT_ROOT_PATH
+from common.path import DEFAULT_CONFIG_PATH, DEPENDENCIES_PATH
 from common.extargparse import *
 from common.modloader import get_inheritors
 
@@ -27,6 +27,8 @@ def available_apps(app_name):
 
 
 if __name__ == "__main__":
+    import sys
+    sys.path.append(DEPENDENCIES_PATH)
 
     parser = argparse.ArgumentParser(description='Vulners Agent ticker script')
     parser.add_argument('--loglevel', default='INFO', type=log_level_string_to_int, nargs='?',
@@ -35,8 +37,7 @@ if __name__ == "__main__":
     parser.add_argument('--logpath', type=log_file_valid_accessible, nargs='?', default=None,
                         help='Application log file to save logger output')
 
-    default_config_dir = os.path.join(PROJECT_ROOT_PATH, 'config', 'vulners_agent.conf')
-    parser.add_argument('--config', type=config_file_exists_accessible, nargs='?', default=default_config_dir,
+    parser.add_argument('--config', type=config_file_exists_accessible, nargs='?', default=DEFAULT_CONFIG_PATH,
                         help='Application config file location')
 
     parser.add_argument('--app', type=available_apps, nargs='?', default=None, required=True,
