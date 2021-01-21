@@ -9,8 +9,12 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
-import app
+import sys
 from common.path import DEFAULT_CONFIG_PATH, DEPENDENCIES_PATH
+
+sys.path.append(DEPENDENCIES_PATH)
+
+import app
 from common.extargparse import *
 from common.modloader import get_inheritors
 
@@ -27,8 +31,6 @@ def available_apps(app_name):
 
 
 if __name__ == "__main__":
-    import sys
-    sys.path.append(DEPENDENCIES_PATH)
 
     parser = argparse.ArgumentParser(description='Vulners Agent ticker script')
     parser.add_argument('--loglevel', default='INFO', type=log_level_string_to_int, nargs='?',
