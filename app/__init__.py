@@ -25,7 +25,8 @@ from six import string_types
 
 
 class ClientApplication(object):
-
+    if os.path.exists(DATA_PATH) is False:
+        os.mkdir(DATA_PATH)
     data_file = os.path.join(DATA_PATH, 'application.data')
     singletone = False
     random_run_delay = True
