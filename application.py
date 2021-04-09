@@ -68,5 +68,6 @@ if __name__ == "__main__":
     for app_name in inheritors:
         inheritors[app_name] = inheritors[app_name](**init_args)
     current_application = inheritors[args.app]
-    # Run application
-    current_application.run_app(args.parameters)
+    # Run application and finish it always with __exit__ method to remove file locks
+    with current_application as app_wrapper:
+        app_wrapper.run_app(args.parameters)

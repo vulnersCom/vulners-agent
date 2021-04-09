@@ -96,7 +96,10 @@ class ClientApplication(object):
                 raise RuntimeError(message)
         self.initialized = True
 
-    def __del__(self):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
         if self.singletone:
             if not self.initialized:
                 return

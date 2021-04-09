@@ -43,7 +43,7 @@ def get_os_parameters():
         os_params = execute('sw_vers').splitlines()
         platform_id = os_params[0].split(":")[1].strip()
         platform_version = os_params[1].split(":")[1].strip()
-        return platform_id, platform_version
+        return platform_id, platform_version, 'macos'
 
     return platform_id, platform_version, platform_family
 
