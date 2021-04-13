@@ -1,3 +1,2 @@
 PATH=/usr/local/bin:/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin
-PYTHONPATH=/opt/vulnersAgent/dependencies
 */10 * * * * vulners python /opt/vulnersAgent/application.py --app Ticker --logpath /var/log/vulners-agent --config /etc/vulners/vulners_agent.conf >> /var/log/vulners-agent/cron.log 2>&1
