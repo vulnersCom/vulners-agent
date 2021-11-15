@@ -25,6 +25,10 @@ class Scanner(ClientApplication):
             'packages': """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\\n'|awk '($1 == "install") && ($2 == "ok") {print $4" "$5" "$6}'""",
         },
 
+        'apk':{
+            'packages': """apk list -I""",
+        },
+
     }
 
     def linux_scan(self, os_name, os_version, os_data):
