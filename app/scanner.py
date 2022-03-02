@@ -17,15 +17,16 @@ class Scanner(ClientApplication):
 
     linux_package_commands = {
 
-        'rpm':{
+        'rpm': {
             'packages': """rpm -qa --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\\n'""",
         },
 
-        'deb':{
-            'packages': """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\\n'|awk '($1 == "install") && ($2 == "ok") {print $4" "$5" "$6}'""",
+        'deb': {
+            'packages': """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\\n'|awk '($1 == "install")
+             && ($2 == "ok") {print $4" "$5" "$6}'""",
         },
 
-        'apk':{
+        'apk': {
             'packages': """apk list -I""",
         },
 
@@ -37,7 +38,11 @@ class Scanner(ClientApplication):
 
         active_kernel = oscommands.execute("uname -r")
 
-        packages = [package for package in package_list if not (package.startswith("kernel-") and package!= "kernel-%s" % active_kernel)]
+        packages = [
+            package
+            for package in package_list
+            if not (package.startswith("kernel-") and package != "kernel-%s" % active_kernel)
+        ]
 
         agent_id = self.get_var('agent_id', namespace='shared')
 
@@ -59,7 +64,6 @@ class Scanner(ClientApplication):
 
         return None
 
-
     def run(self):
         agent_id = self.get_var('agent_id', namespace='shared')
         if not agent_id:
@@ -73,25 +77,31 @@ class Scanner(ClientApplication):
 
             # Exit if OS is not supported in any way
             if os_name not in supported_os_lib:
-                self.log.error("Can't perform scan request: Unknown OS %s. Supported os list: %s" % (os_name, supported_os_lib))
+                self.log.error(
+                    "Can't perform scan request: Unknown OS %s. Supported os list: %s" % (os_name, supported_os_lib)
+                )
                 return
 
             os_data = supported_os_lib[os_name]
         else:
             os_data = {
-                "osType":'windows'
+                "osType": 'windows'
             }
 
-        if not hasattr(self, "%s_scan" % os_data['osType']) or not callable(getattr(self, "%s_scan" % os_data['osType'], None)):
+        if not hasattr(self, "%s_scan" % os_data['osType']) \
+                or not callable(getattr(self, "%s_scan" % os_data['osType'], None)):
             self.log.error("Can't scan this type of os: %s - no suitable scan method fount" % os_data['osType'])
             return
 
-        scan_result = getattr(self, "%s_scan" % os_data['osType'])(os_name = os_name,
-                                                                 os_version = os_version,
-                                                                 os_data = os_data,
-                                                                 )
+        scan_result = getattr(self, "%s_scan" % os_data['osType'])(
+            os_name=os_name,
+            os_version=os_version,
+            os_data=os_data
+        )
 
         self.log.debug("Scan complete: %s" % scan_result)
         last_scan_results = self.get_var('last_scan_results') or []
         last_scan_results.append(scan_result)
         self.set_var('last_scan_results', last_scan_results[:5])
+
+        self.log.info('Scan complete. Check your result at https://vulners.com/scan')

@@ -57,6 +57,13 @@ deb http://repo.vulners.com/debian jessie main
 ### Debian
 ```apt-get update && apt-get install vulners-agent```
 
+### Source code (We don't recommend this way)
+You could clone source code of package and perform scans using python. 
+According best practices you should use virtual environment
+* install requirements.txt with ```pip3 install -r vulners-agent/requirements.txt```
+* configure agent as described below
+* run ```python3 vulners-agent/application --app Scanner```
+
 ## Agent configuration
 Now you should get api-key for agent registration. Log in to vulners.com, go to [userinfo space] (https://vulners.com/userinfo) . Then you should choose "apikey" section.
 Choose "scan" in scope menu and click "Generate new key". You will get an api-key, which looks like this:
@@ -73,6 +80,8 @@ api_key = RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK
 ## Agent execution
 
 During first run agent will automatically register with configured api_key
+
+To perform your system scan run ```vulners-agent --app Scanner```.
 
 After this you may look at agent status and scanning results at https://vulners.com/audit
 

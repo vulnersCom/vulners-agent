@@ -78,7 +78,7 @@ class ClientApplication(object):
                 self.fd = os.open(
                     self.lockfile, os.O_CREAT | os.O_EXCL | os.O_RDWR)
             except OSError:
-                type, e, tb = sys.exc_info()
+                err_type, e, tb = sys.exc_info()
                 if e.errno == 13:
                     message = "Application %s: Another instance is already running, quitting." % self.__class__.__name__
                     self.log.error(message)
@@ -91,7 +91,10 @@ class ClientApplication(object):
             try:
                 fcntl.lockf(self.fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
-                message = "Application %s: Another instance of %s is already running, quitting." % (self.__class__.__name__, self.__class__.__name__)
+                message = "Application %s: Another instance of %s is already running, quitting." % (
+                    self.__class__.__name__, self.__class__.__name__
+                )
+
                 self.log.warning(message)
                 raise RuntimeError(message)
         self.initialized = True
@@ -133,12 +136,12 @@ class ClientApplication(object):
             return {}
         return data
 
-    def get_var(self, var_name, namespace = None):
+    def get_var(self, var_name, namespace=None):
         namespace = namespace or self.__class__.__name__
         shared_data = self.__read_data_file() or {}
         return shared_data.get(namespace, {}).get(var_name, None)
 
-    def del_var(self, var_name, namespace = None):
+    def del_var(self, var_name, namespace=None):
         namespace = namespace or self.__class__.__name__
         shared_data = self.__read_data_file() or {}
         if var_name in shared_data.get(namespace, {}):
@@ -178,7 +181,12 @@ class ClientApplication(object):
         try:
             pad_str = ' ' * len('%d' % step)
             for i in range(sleep_time, 0, -step):
-                self.log.debug('Application %s: %s for the next %s seconds %s' % (self.__class__.__name__, msg, i, pad_str))
+                self.log.debug(
+                    'Application %s: %s for the next %s seconds %s' % (
+                        self.__class__.__name__, msg, i, pad_str
+                    )
+                )
+
                 time.sleep(step)
         except KeyboardInterrupt:
             self.log.debug('Application %s: Countdown interrupted' % self.__class__.__name__)
@@ -195,7 +203,11 @@ class ClientApplication(object):
         if self.random_run_delay:
             # Delay up to 5 minutes for running app
             random_sleep = randint(0, 60*5)
-            self.log.debug("Application %s: Random sleep: %s" % (self.__class__.__name__, random_sleep))
+            self.log.info(
+                "Application %s: Waiting for queue to perform action - estimated waiting time is %s seconds" % (
+                    self.__class__.__name__, random_sleep
+                )
+            )
             self.countdown(random_sleep)
         #
         # Set up Vulners connection lib
