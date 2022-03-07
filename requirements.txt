@@ -7,6 +7,5 @@ ifaddr==0.1.7
 pytimeparse==1.1.8
 arrow==0.17.0
 configparser==4.0.2
-futures==3.1.1
 pytz==2021.1
-wmi==1.5.1
+wmi==1.5.1; platform_system == "Windows"
