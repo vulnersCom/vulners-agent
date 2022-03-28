@@ -22,8 +22,7 @@ class Scanner(ClientApplication):
         },
 
         'deb': {
-            'packages': """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\\n'|awk '($1 == "install")
-             && ($2 == "ok") {print $4" "$5" "$6}'""",
+            'packages': """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\\n'|awk '($1 == "install") && ($2 == "ok") {print $4" "$5" "$6}'""",
         },
 
         'apk': {
