@@ -8,6 +8,8 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
+import re
+
 import distro
 from getmac import get_mac_address
 import socket
@@ -17,7 +19,6 @@ from collections import defaultdict
 import concurrent.futures
 import platform
 from common.stringops import remove_non_ascii
-
 
 LOOPBACK = ['127.0.0.1', '0:0:0:0:0:0:0:1']
 
@@ -45,16 +46,27 @@ def get_os_parameters():
         platform_version = os_params[1].split(":")[1].strip()
         return platform_id, platform_version, 'macos'
 
+    if platform_id == "altlinux":
+        platform_version = _parse_altlinux_version(platform_version)
+
     return platform_id, platform_version, platform_family
 
+
+def _parse_altlinux_version(platform_version: str) -> str:
+    match = re.search("^(?P<major>\d+)\.", platform_version)
+    return match.group("major")
+
+
 def get_interface_data(interface_name, ipaddress):
-    macaddress = (get_mac_address(interface=interface_name) or get_mac_address(ip=ipaddress, network_request=True) or "NONE")
+    macaddress = (get_mac_address(interface=interface_name) or get_mac_address(ip=ipaddress,
+                                                                               network_request=True) or "NONE")
     macaddress = macaddress.upper()
     return {
         "ifaceName": interface_name,
         'ipaddress': ipaddress,
         'macaddress': macaddress
     }
+
 
 def get_interface_list():
     active_interfaces = defaultdict(list)
@@ -77,7 +89,7 @@ def get_interface_list():
 
     interface_list = []
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers = len(active_interfaces)) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(active_interfaces)) as executor:
         app_exec_pool = [executor.submit(get_interface_data, interface_name, active_interfaces[interface_name][0]) for
                          interface_name in active_interfaces]
         for future in concurrent.futures.as_completed(app_exec_pool):
@@ -87,8 +99,8 @@ def get_interface_list():
             interface[key] = remove_non_ascii(interface[key])
     return interface_list
 
-def get_ip_mac_fqdn():
 
+def get_ip_mac_fqdn():
     interfaces = get_interface_list()
 
     primary_interface = sorted(interfaces, key=lambda k: k['ifaceName'])[0]
