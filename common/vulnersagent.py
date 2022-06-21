@@ -11,6 +11,7 @@ __author__ = "Kir Ermakov <isox@vulners.com>"
 import vulners
 from six import string_types
 
+
 class AgentAPI(vulners.Vulners):
 
     # Vulners API Hostname
@@ -23,9 +24,10 @@ class AgentAPI(vulners.Vulners):
         'apiKey': "/api/v3/apiKey/valid/",
         'audit': "/api/v3/audit/audit/",
         'agent_register': "/api/v3/agent/register/",
-        'agent_update':"/api/v3/agent/update/",
-        'agent_audit':"/api/v3/agent/audit/",
-        'supported_os':"/api/v3/agent/supported/"
+        'agent_update': "/api/v3/agent/update/",
+        'agent_audit': "/api/v3/agent/audit/",
+        'agent_winsoftware': "/api/v3/agent/winsoftware",
+        'supported_os': "/api/v3/agent/supported/"
     }
 
     def supported_os(self):

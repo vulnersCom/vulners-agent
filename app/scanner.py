@@ -7,6 +7,7 @@
 #  All Rights Reserved.
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
+import re
 from . import ClientApplication
 from common import osdetect, oscommands
 
@@ -31,34 +32,48 @@ class Scanner(ClientApplication):
 
     }
 
-    def linux_scan(self, os_name, os_version, os_data):
+    def linux_scan(self, os_name, os_version, os_data, os_family=None):
 
         package_list = oscommands.execute(self.linux_package_commands[os_data['packager']]['packages']).splitlines()
-
         active_kernel = oscommands.execute("uname -r")
-
-        packages = [package for package in package_list if not (package.startswith("kernel-") and package!= "kernel-%s" % active_kernel)]
+        packages = [
+            package
+            for package in package_list
+            if not (package.startswith("kernel-") and package != "kernel-%s" % active_kernel)
+        ]
 
         agent_id = self.get_var('agent_id', namespace='shared')
-
-        scan_results = self.vulners.agent_audit(agent_id=agent_id,
-                                                os=os_name,
-                                                os_version=os_version,
-                                                package=packages)
+        scan_results = self.vulners.agent_audit(
+            agent_id=agent_id,
+            os=os_name,
+            os_version=os_version,
+            package=packages
+        )
         return scan_results
 
-    def windows_scan(self, os_name, os_version, os_data):
-        from common.winutils import get_windows_installed_software, get_windows_updates, get_windows_data
-        windows_data = get_windows_data()
+    def windows_scan(self, os_name, os_version, os_data, os_family):
+        from common.winutils import get_windows_installed_software, get_windows_updates
 
         missing_kb, missing_updates, installed_kb, installed_updates = get_windows_updates()
         installed_software_list = get_windows_installed_software()
-
+        software = []
+        for name, version in installed_software_list.items():
+            if re.match(r'^[\d+?.]+$', name.split()[-1]):
+                name = ' '.join(name.split()[:-1])
+            software.append({
+                'software': name,
+                'version': version,
+            })
         self.log.debug("Found missing KB's: %s" % missing_kb)
         self.log.debug("Enumerated Windows Software List: %s" % installed_software_list)
-
-        return None
-
+        agent_id = self.get_var('agent_id', namespace='shared')
+        scan_results = self.vulners.agent_audit(
+            agent_id=agent_id,
+            os=os_data['osType'],
+            os_version=os_version,
+            package=software
+        )
+        return scan_results
 
     def run(self):
         agent_id = self.get_var('agent_id', namespace='shared')
@@ -79,17 +94,19 @@ class Scanner(ClientApplication):
             os_data = supported_os_lib[os_name]
         else:
             os_data = {
-                "osType":'windows'
+                "osType": 'windows'
             }
 
-        if not hasattr(self, "%s_scan" % os_data['osType']) or not callable(getattr(self, "%s_scan" % os_data['osType'], None)):
+        if (
+            not hasattr(self, "%s_scan" % os_data['osType'])
+            or not callable(getattr(self, "%s_scan" % os_data['osType'], None))
+        ):
             self.log.error("Can't scan this type of os: %s - no suitable scan method fount" % os_data['osType'])
             return
 
-        scan_result = getattr(self, "%s_scan" % os_data['osType'])(os_name = os_name,
-                                                                 os_version = os_version,
-                                                                 os_data = os_data,
-                                                                 )
+        scan_result = getattr(self, "%s_scan" % os_data['osType'])(
+            os_name=os_name, os_version=os_version, os_data=os_data
+        )
 
         self.log.debug("Scan complete: %s" % scan_result)
         last_scan_results = self.get_var('last_scan_results') or []

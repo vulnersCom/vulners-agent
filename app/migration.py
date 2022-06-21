@@ -13,6 +13,7 @@ import os
 from os import access, R_OK
 from common.configreader import get_full_config
 
+
 class Migration(ClientApplication):
 
     random_run_delay = False

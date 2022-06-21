@@ -5,12 +5,13 @@ import ctypes
 import wmi
 from common.stringops import remove_non_ascii
 
+
 def get_windows_data():
     key = r"SOFTWARE\Microsoft\Windows NT\CurrentVersion"
 
     with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key) as key:
-        releaseId = int(winreg.QueryValueEx(key,"ReleaseID")[0])
-        installation_type = str(winreg.QueryValueEx(key,"InstallationType")[0])
+        releaseId = int(winreg.QueryValueEx(key, "ReleaseID")[0])
+        installation_type = str(winreg.QueryValueEx(key, "InstallationType")[0])
         edition = str(winreg.QueryValueEx(key, "EditionID")[0])
 
     class OSVersionInfo(ctypes.Structure):
@@ -35,12 +36,13 @@ def get_windows_data():
         "major": version.dwMajorVersion,
         "minor": version.dwMinorVersion,
         "platform": version.dwPlatformId,
-        "release":releaseId,
-        "name":remove_non_ascii(os.Caption),
-        "version":os.Version,
-        "type":installation_type,
-        "edition":edition,
+        "release": releaseId,
+        "name": remove_non_ascii(os.Caption),
+        "version": os.Version,
+        "type": installation_type,
+        "edition": edition,
     }
+
 
 def get_windows_updates():
     # Search installed/not installed Software Windows Updates
@@ -74,15 +76,17 @@ def get_windows_updates():
            list(installed_kbs), \
            list(installed_updates)
 
+
 def enumerate_register_subkeys(key):
     i = 0
     while True:
         try:
             subkey = winreg.EnumKey(key, i)
             yield subkey
-            i+=1
-        except WindowsError as e:
+            i += 1
+        except WindowsError:
             break
+
 
 def get_register_key_values(key):
     key_dict = {}
@@ -90,11 +94,12 @@ def get_register_key_values(key):
     while True:
         try:
             subvalue = winreg.EnumValue(key, i)
-        except WindowsError as e:
+        except WindowsError:
             break
         key_dict[subvalue[0]] = subvalue[1:]
-        i+=1
+        i += 1
     return key_dict
+
 
 def traverse_registry_tree(hkey, keypath, reg_dict):
 
@@ -105,6 +110,7 @@ def traverse_registry_tree(hkey, keypath, reg_dict):
         traverse_registry_tree(hkey, subkeypath, reg_dict)
     return reg_dict
 
+
 def get_windows_installed_software():
     registry_paths = [
         r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
@@ -112,7 +118,8 @@ def get_windows_installed_software():
     ]
     reg_dict = {}
     software_enumeration = {}
-    traverse_registry_tree(winreg.HKEY_LOCAL_MACHINE, registry_paths[0], reg_dict)
+    for path in registry_paths:
+        traverse_registry_tree(winreg.HKEY_LOCAL_MACHINE, path, reg_dict)
     for software_data in reg_dict.values():
         if "DisplayName" in software_data and "DisplayVersion" in software_data:
             software_enumeration[software_data["DisplayName"][0].strip()] = software_data["DisplayVersion"][0]

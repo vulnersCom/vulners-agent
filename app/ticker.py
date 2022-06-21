@@ -19,6 +19,7 @@ import concurrent.futures
 import six
 import time
 
+
 class Ticker(ClientApplication):
 
     singletone = True
@@ -70,7 +71,6 @@ class Ticker(ClientApplication):
                 app_run_results.append(future.result())
 
         return schedule_list
-
 
     def run(self):
         # Let's check up that this agent is registered
