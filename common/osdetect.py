@@ -47,7 +47,9 @@ def get_os_parameters():
         return platform_id, platform_version, 'macos'
 
     if platform_id == "altlinux":
+        platform_id = "alt linux"
         platform_version = _parse_altlinux_version(platform_version)
+        return platform_id, platform_version, platform_family
 
     return platform_id, platform_version, platform_family
 
