@@ -68,6 +68,15 @@ if __name__ == "__main__":
     for app_name in inheritors:
         inheritors[app_name] = inheritors[app_name](**init_args)
     current_application = inheritors[args.app]
+
+    # Check is there agent_id already set, set it if there is no agent_id
+    if args.app != 'Ticker':
+        ticker_app = inheritors['Ticker']
+        with ticker_app as ticker_app_wrapper:
+            agent_id = ticker_app_wrapper.get_var('agent_id', namespace='shared')
+            if not agent_id:
+                ticker_app_wrapper.run_app(args.parameters)
+
     # Run application and finish it always with __exit__ method to remove file locks
     with current_application as app_wrapper:
         app_wrapper.run_app(args.parameters)
