@@ -28,7 +28,7 @@ class ClientApplication(object):
     if os.path.exists(DATA_PATH) is False:
         os.mkdir(DATA_PATH)
     data_file = os.path.join(DATA_PATH, 'application.data')
-    singletone = False
+    singleton = False
     random_run_delay = True
 
     def __init__(self, config_file, log_level, log_path, inheritor_apps, ignore_proxy):
@@ -58,7 +58,7 @@ class ClientApplication(object):
         self.application_list = inheritor_apps
         self.log.debug("Application %s: Inherited apps loaded as %s" % (self.__class__.__name__, inheritor_apps))
 
-    def singletone_init(self):
+    def singleton_init(self):
         flavor_id = self.__class__.__name__
         self.initialized = False
 
@@ -103,7 +103,7 @@ class ClientApplication(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.singletone:
+        if self.singleton:
             if not self.initialized:
                 return
             try:
@@ -194,11 +194,11 @@ class ClientApplication(object):
             return
 
     def run_app(self, parameters):
-        self.log.debug("Application %s: Starting run. Singletone mode: %s" % (self.__class__.__name__, self.singletone))
+        self.log.debug("Application %s: Starting run. Singleton mode: %s" % (self.__class__.__name__, self.singleton))
         #
-        if self.singletone:
-            self.log.debug("Application %s: Init multiprocess singletone run lock" % self.__class__.__name__)
-            self.singletone_init()
+        if self.singleton:
+            self.log.debug("Application %s: Init multiprocess singleton run lock" % self.__class__.__name__)
+            self.singleton_init()
         #
         if self.random_run_delay:
             # Delay up to 5 minutes for running app

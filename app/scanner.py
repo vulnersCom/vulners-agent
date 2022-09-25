@@ -13,7 +13,7 @@ from common import osdetect, oscommands
 
 class Scanner(ClientApplication):
 
-    singletone = True
+    singleton = True
 
     linux_package_commands = {
 
