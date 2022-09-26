@@ -97,5 +97,6 @@ api_key = RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK
 ip_address = 10.0.0.1
 fqdn = my.host.example.com
 mac_address = 00:01:02:03:04:06
+interval = 3h30m
 
 ```
