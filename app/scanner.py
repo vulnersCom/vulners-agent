@@ -51,7 +51,7 @@ class Scanner(ClientApplication):
         )
         return scan_results
 
-    def windows_scan(self, os_name, os_version, os_data, os_family):
+    def windows_scan(self, os_name, os_version, os_data, os_family=None):
         from common.winutils import get_windows_installed_software, get_windows_updates
 
         missing_kb, missing_updates, installed_kb, installed_updates = get_windows_updates()
@@ -67,11 +67,11 @@ class Scanner(ClientApplication):
         self.log.debug("Found missing KB's: %s" % missing_kb)
         self.log.debug("Enumerated Windows Software List: %s" % installed_software_list)
         agent_id = self.get_var('agent_id', namespace='shared')
-        scan_results = self.vulners.agent_audit(
+        scan_results = self.vulners.agent_winaudit(
             agent_id=agent_id,
             os=os_data['osType'],
             os_version=os_version,
-            package=software
+            software=software
         )
         return scan_results
 
