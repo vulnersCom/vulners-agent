@@ -8,7 +8,8 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 import re
-from . import ClientApplication
+
+from app import ClientApplication
 from common import osdetect, oscommands
 
 
@@ -51,7 +52,7 @@ class Scanner(ClientApplication):
         )
         return scan_results
 
-    def windows_scan(self, os_name, os_version, os_data, os_family=None):
+    def windows_scan(self, os_name, os_version, os_data, os_family='windows'):
         from common.winutils import get_windows_installed_software, get_windows_updates
 
         missing_kb, missing_updates, installed_kb, installed_updates = get_windows_updates()
@@ -71,7 +72,8 @@ class Scanner(ClientApplication):
             agent_id=agent_id,
             os=os_data['osType'],
             os_version=os_version,
-            software=software
+            software=software,
+            kb_list=installed_kb
         )
         return scan_results
 

@@ -8,7 +8,7 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
-from . import ClientApplication
+from app import ClientApplication
 import os
 from os import access, R_OK
 from common.configreader import get_full_config
