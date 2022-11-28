@@ -8,7 +8,7 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
-from . import ClientApplication
+from app import ClientApplication
 from common import __version__ as __agent_version__, __agent_type__
 from common import osdetect
 from pytimeparse.timeparse import timeparse

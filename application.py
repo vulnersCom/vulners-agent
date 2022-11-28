@@ -17,6 +17,7 @@ sys.path.append(DEPENDENCIES_PATH)
 import app
 from common.extargparse import *
 from common.modloader import get_inheritors
+from app import scanner,ticker
 
 
 def available_apps(app_name):
@@ -51,6 +52,9 @@ if __name__ == "__main__":
     parser.add_argument('--ignore-proxy', default=False, const=True, nargs='?',
                         help='Ignore proxy configuration and environment')
 
+    parser.add_argument('--data_dir', type=data_dir_exists_accessible, nargs='?', default=None,
+                        help='Application data directory location')
+
     args = parser.parse_args()
 
     # Initialize applications
@@ -63,6 +67,7 @@ if __name__ == "__main__":
         'log_path': args.logpath,
         'ignore_proxy': args.ignore_proxy,
         'inheritor_apps': inheritors,
+        'data_dir': args.data_dir
     }
 
     for app_name in inheritors:

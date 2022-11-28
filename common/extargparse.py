@@ -45,6 +45,19 @@ def config_file_exists_accessible(config_file_path_name):
 
     return config_file_path_name
 
+def data_dir_exists_accessible(data_dir_name):
+
+    if not os.path.exists(data_dir_name):
+        message = 'invalid file path: {0} Error: {1}'.format(data_dir_name,
+                                                             "Directory do not exist.")
+        raise argparse.ArgumentTypeError(message)
+
+    if not access(data_dir_name, W_OK):
+        message = 'invalid file path: {0} Error: {1}'.format(data_dir_name,
+                                                             "Directory is not accessible.")
+        raise argparse.ArgumentTypeError(message)
+
+    return data_dir_name
 
 class StoreDictKeyPair(argparse.Action):
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
