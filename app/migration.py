@@ -17,7 +17,7 @@ from common.configreader import get_full_config
 class Migration(ClientApplication):
 
     random_run_delay = False
-    singletone = True
+    singleton = True
 
     def run(self, old_config_file, old_version):
         # Check that config gile do exist

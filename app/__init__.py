@@ -28,7 +28,7 @@ class ClientApplication(object):
     if os.path.exists(DATA_PATH) is False:
         os.mkdir(DATA_PATH)
     data_file = os.path.join(DATA_PATH, 'application.data')
-    singletone = False
+    singleton = False
     random_run_delay = True
 
     def __init__(self, config_file, log_level, log_path, inheritor_apps, ignore_proxy, data_dir):
@@ -61,7 +61,7 @@ class ClientApplication(object):
         if data_dir:
             self.data_file = os.path.join(data_dir, 'application.data')
 
-    def singletone_init(self):
+    def singleton_init(self):
         flavor_id = self.__class__.__name__
         self.initialized = False
 
@@ -81,7 +81,7 @@ class ClientApplication(object):
                 self.fd = os.open(
                     self.lockfile, os.O_CREAT | os.O_EXCL | os.O_RDWR)
             except OSError:
-                type, e, tb = sys.exc_info()
+                err_type, e, tb = sys.exc_info()
                 if e.errno == 13:
                     message = "Application %s: Another instance is already running, quitting." % self.__class__.__name__
                     self.log.error(message)
@@ -94,7 +94,10 @@ class ClientApplication(object):
             try:
                 fcntl.lockf(self.fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
-                message = "Application %s: Another instance of %s is already running, quitting." % (self.__class__.__name__, self.__class__.__name__)
+                message = "Application %s: Another instance of %s is already running, quitting." % (
+                    self.__class__.__name__, self.__class__.__name__
+                )
+
                 self.log.warning(message)
                 raise RuntimeError(message)
         self.initialized = True
@@ -103,7 +106,7 @@ class ClientApplication(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.singletone:
+        if self.singleton:
             if not self.initialized:
                 return
             try:
@@ -136,12 +139,12 @@ class ClientApplication(object):
             return {}
         return data
 
-    def get_var(self, var_name, namespace = None):
+    def get_var(self, var_name, namespace=None):
         namespace = namespace or self.__class__.__name__
         shared_data = self.__read_data_file() or {}
         return shared_data.get(namespace, {}).get(var_name, None)
 
-    def del_var(self, var_name, namespace = None):
+    def del_var(self, var_name, namespace=None):
         namespace = namespace or self.__class__.__name__
         shared_data = self.__read_data_file() or {}
         if var_name in shared_data.get(namespace, {}):
@@ -181,7 +184,12 @@ class ClientApplication(object):
         try:
             pad_str = ' ' * len('%d' % step)
             for i in range(sleep_time, 0, -step):
-                self.log.debug('Application %s: %s for the next %s seconds %s' % (self.__class__.__name__, msg, i, pad_str))
+                self.log.debug(
+                    'Application %s: %s for the next %s seconds %s' % (
+                        self.__class__.__name__, msg, i, pad_str
+                    )
+                )
+
                 time.sleep(step)
         except KeyboardInterrupt:
             self.log.debug('Application %s: Countdown interrupted' % self.__class__.__name__)
@@ -189,16 +197,20 @@ class ClientApplication(object):
             return
 
     def run_app(self, parameters):
-        self.log.debug("Application %s: Starting run. Singletone mode: %s" % (self.__class__.__name__, self.singletone))
+        self.log.debug("Application %s: Starting run. Singleton mode: %s" % (self.__class__.__name__, self.singleton))
         #
-        if self.singletone:
-            self.log.debug("Application %s: Init multiprocess singletone run lock" % self.__class__.__name__)
-            self.singletone_init()
+        if self.singleton:
+            self.log.debug("Application %s: Init multiprocess singleton run lock" % self.__class__.__name__)
+            self.singleton_init()
         #
         if self.random_run_delay:
             # Delay up to 5 minutes for running app
             random_sleep = randint(0, 60*5)
-            self.log.debug("Application %s: Random sleep: %s" % (self.__class__.__name__, random_sleep))
+            self.log.info(
+                "Application %s: Waiting for queue to perform action - estimated waiting time is %s seconds" % (
+                    self.__class__.__name__, random_sleep
+                )
+            )
             self.countdown(random_sleep)
         #
         # Set up Vulners connection lib

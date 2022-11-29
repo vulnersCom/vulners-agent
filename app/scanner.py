@@ -15,19 +15,19 @@ from common import osdetect, oscommands
 
 class Scanner(ClientApplication):
 
-    singletone = True
+    singleton = True
 
     linux_package_commands = {
 
-        'rpm':{
+        'rpm': {
             'packages': """rpm -qa --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\\n'""",
         },
 
-        'deb':{
+        'deb': {
             'packages': """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\\n'|awk '($1 == "install") && ($2 == "ok") {print $4" "$5" "$6}'""",
         },
 
-        'apk':{
+        'apk': {
             'packages': """apk list -I""",
         },
 
@@ -90,7 +90,9 @@ class Scanner(ClientApplication):
 
             # Exit if OS is not supported in any way
             if os_name not in supported_os_lib:
-                self.log.error("Can't perform scan request: Unknown OS %s. Supported os list: %s" % (os_name, supported_os_lib))
+                self.log.error(
+                    "Can't perform scan request: Unknown OS %s. Supported os list: %s" % (os_name, supported_os_lib)
+                )
                 return
 
             os_data = supported_os_lib[os_name]
@@ -107,10 +109,14 @@ class Scanner(ClientApplication):
             return
 
         scan_result = getattr(self, "%s_scan" % os_data['osType'])(
-            os_name=os_name, os_version=os_version, os_data=os_data
+            os_name=os_name,
+            os_version=os_version,
+            os_data=os_data
         )
 
         self.log.debug("Scan complete: %s" % scan_result)
         last_scan_results = self.get_var('last_scan_results') or []
         last_scan_results.append(scan_result)
         self.set_var('last_scan_results', last_scan_results[:5])
+
+        self.log.info('Scan complete. Check your result at https://vulners.com/scan')
