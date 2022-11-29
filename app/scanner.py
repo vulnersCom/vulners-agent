@@ -33,10 +33,12 @@ class Scanner(ClientApplication):
 
     }
 
-    def linux_scan(self, os_name, os_version, os_data, os_family=None):
+    def linux_scan(self, os_name, os_version, os_data):
 
         package_list = oscommands.execute(self.linux_package_commands[os_data['packager']]['packages']).splitlines()
+
         active_kernel = oscommands.execute("uname -r")
+
         packages = [
             package
             for package in package_list
@@ -44,12 +46,11 @@ class Scanner(ClientApplication):
         ]
 
         agent_id = self.get_var('agent_id', namespace='shared')
-        scan_results = self.vulners.agent_audit(
-            agent_id=agent_id,
-            os=os_name,
-            os_version=os_version,
-            package=packages
-        )
+
+        scan_results = self.vulners.agent_audit(agent_id=agent_id,
+                                                os=os_name,
+                                                os_version=os_version,
+                                                package=packages)
         return scan_results
 
     def windows_scan(self, os_name, os_version, os_data, os_family='windows'):
@@ -101,10 +102,8 @@ class Scanner(ClientApplication):
                 "osType": 'windows'
             }
 
-        if (
-            not hasattr(self, "%s_scan" % os_data['osType'])
-            or not callable(getattr(self, "%s_scan" % os_data['osType'], None))
-        ):
+        if not hasattr(self, "%s_scan" % os_data['osType']) \
+                or not callable(getattr(self, "%s_scan" % os_data['osType'], None)):
             self.log.error("Can't scan this type of os: %s - no suitable scan method fount" % os_data['osType'])
             return
 
