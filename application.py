@@ -17,6 +17,7 @@ sys.path.append(DEPENDENCIES_PATH)
 import app
 from common.extargparse import *
 from common.modloader import get_inheritors
+from app import scanner,ticker
 
 
 def available_apps(app_name):

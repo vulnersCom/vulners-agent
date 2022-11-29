@@ -106,7 +106,28 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("OS Version expected to be a string")
         if not isinstance(package, (list, set)):
             raise TypeError("Package expected to be a list or set")
-        return self.vulners_post_request(
-            'agent_audit',
-            {"os": os, 'version': os_version, 'package': package, 'agentId': agent_id}
-        )
+        return self.vulners_post_request('agent_audit',
+                                         {"os": os, 'version': os_version,
+                                          'package': package, 'agentId': agent_id})
+
+    def agent_winaudit(self, agent_id, os, os_version, software, kb_list):
+        """
+        Tech Agent Audit for Windows OS call
+
+        :return: {'packages':[LIST OF VULNERABLE PACKAGES], 'reasons':LIST OF REASONS, 'vulnerabilities':[LIST OF VULNERABILITY IDs]}
+        """
+        if not isinstance(agent_id, string_types) or not agent_id:
+            raise TypeError("agent_id expected to be a non empty string")
+        if not isinstance(os, string_types):
+            raise TypeError("OS expected to be a string")
+        if not isinstance(os_version, string_types):
+            raise TypeError("OS Version expected to be a string")
+        if not isinstance(software, (list, set)):
+            raise TypeError("Software expected to be a list or set")
+        if not isinstance(kb_list, (list, set)):
+            raise TypeError("Installed KB expected to be a list or set")
+        return self.vulners_post_request('agent_winsoftware', {"os": os,
+                                                               'os_version': os_version,
+                                                               'software': software,
+                                                               'kb_list': kb_list,
+                                                               'agentId': agent_id})
