@@ -7,7 +7,9 @@
 #  All Rights Reserved.
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
-from . import ClientApplication
+import re
+
+from app import ClientApplication
 from common import osdetect, oscommands
 
 
@@ -51,17 +53,30 @@ class Scanner(ClientApplication):
                                                 package=packages)
         return scan_results
 
-    def windows_scan(self, os_name, os_version, os_data):
-        from common.winutils import get_windows_installed_software, get_windows_updates, get_windows_data
-        windows_data = get_windows_data()
+    def windows_scan(self, os_name, os_version, os_data, os_family='windows'):
+        from common.winutils import get_windows_installed_software, get_windows_updates
 
         missing_kb, missing_updates, installed_kb, installed_updates = get_windows_updates()
         installed_software_list = get_windows_installed_software()
-
+        software = []
+        for name, version in installed_software_list.items():
+            if re.match(r'^[\d+?.]+$', name.split()[-1]):
+                name = ' '.join(name.split()[:-1])
+            software.append({
+                'software': name,
+                'version': version,
+            })
         self.log.debug("Found missing KB's: %s" % missing_kb)
         self.log.debug("Enumerated Windows Software List: %s" % installed_software_list)
-
-        return None
+        agent_id = self.get_var('agent_id', namespace='shared')
+        scan_results = self.vulners.agent_winaudit(
+            agent_id=agent_id,
+            os=os_data['osType'],
+            os_version=os_version,
+            software=software,
+            kb_list=installed_kb
+        )
+        return scan_results
 
     def run(self):
         agent_id = self.get_var('agent_id', namespace='shared')
