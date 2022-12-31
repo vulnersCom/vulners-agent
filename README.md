@@ -2,13 +2,13 @@
 
 ![Vulners Agent](img/vulners_logo.png)
 
-Vulners agent is an open source solution, which provides vulnerability assessment for Linux-based systems. The agent performs scans with minimum execution commands and, as a result, achieves extremely fast scanning speed. You will need the **Python 3** to install the agent.
+Vulners agent is an open source solution, which provides vulnerability assessment for Linux-based and Windows operating systems. The agent performs scans with minimum execution commands and, as a result, achieves extremely fast scanning speed. You will need the **Python 3** to install the agent.
 
 The agent gathers information about your operating system, its version, and any installed packages. This information is then sent to Vulners API to find out which software is vulnerable. You can check how it works in [manual mode](https://vulners.com/audit) to evaluate the results.
 
 ![Vulners Audit IP Summary](img/audit_ipsummary.png)
 
-## Installation
+## Installation for Linux-based operating systems
 
 ### Configure a repository for RHEL-based Linux:
 
@@ -62,7 +62,7 @@ You could clone the source code of a package and perform scans using Python. Acc
 * configure the agent as described below, 
 * run ```python3 vulners-agent/application --app Scanner```.
 
-## Configuration
+## Configuration for Linux-based operating systems
 Now, you have to generate an API key to register the agent. [Log in](https://vulners.com/userinfo) to Vulners, go to the userinfo space and click on the API KEYS tab. In the "Scope" field, select "scan", click SAVE and then copy the generated key. The result should look something like this:
 
 **RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK**
@@ -77,7 +77,7 @@ api_key = RGB9YPJG7CFAXP35PMDVYFFJPGZ9ZIRO1VGO9K9269B0K86K6XQQQR32O6007NUK
 ```
 You can use one API key for all your agents.
 
-## Execution
+### Execution
 
 During the first run, the agent will be automatically registered with the configured API key.
 
@@ -85,7 +85,7 @@ Perform a system scan by running ```vulners-agent --app Scanner```.
 
 Once finished, you can view agent status and scan results in the [Audit](https://vulners.com/linux-scanner/audit) section of your personal account. 
 
-## Advanced configuration
+### Advanced configuration
 
 Using /etc/vulners/vulners_agent.conf you can override part of the identification parameters.
 
@@ -99,3 +99,23 @@ fqdn = my.host.example.com
 mac_address = 00:01:02:03:04:06
 interval = 3h30m
 ```
+
+## Installation and configuration for Windows
+Run VulnersAgentInstaller_v2.2.0.msi and follow wizard.
+
+Generate API-key to register the agent and paste it during the configuration step. 
+If necessary, you can set an alternate Vulners host or Vulners proxy address. You can also set agent identification parameters, such as IP address and FQDN. You will see these parameters in the Dashboard. 
+
+<img src="img/configuration.png" alt="drawing" width="450"/>
+
+Press Next and finish installation. Scanning process will be started automatically.
+
+To run installer silently use following arguments
+- APIKEY (required)
+- INSTALLDIR
+- HOST
+- IP
+- FQDN
+- MAC
+
+The installation process will create a scheduled task that performs the scan and a configuration file. You can use the Windows Task Scheduler console to adjust the scan interval. The configuration and logs are located in the Program Data folder. 
