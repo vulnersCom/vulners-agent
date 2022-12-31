@@ -1,5 +1,6 @@
 import winreg
 import re
+import pythoncom
 import win32com.client
 import ctypes
 import wmi
@@ -28,6 +29,7 @@ def get_windows_data():
     version.dwOSVersionInfoSize = ctypes.sizeof(OSVersionInfo)
     GetVersionEx(ctypes.byref(version))
 
+    pythoncom.CoInitialize()
     c = wmi.WMI()
     os = c.Win32_OperatingSystem()[0]
 

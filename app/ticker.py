@@ -14,7 +14,7 @@ import pytz
 import arrow
 import datetime
 import concurrent.futures
-from . import ClientApplication
+from app import ClientApplication
 from common import __version__ as __agent_version__, __agent_type__
 from common import osdetect
 from pytimeparse.timeparse import timeparse

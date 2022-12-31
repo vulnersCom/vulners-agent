@@ -31,7 +31,7 @@ class ClientApplication(object):
     singleton = False
     random_run_delay = True
 
-    def __init__(self, config_file, log_level, log_path, inheritor_apps, ignore_proxy):
+    def __init__(self, config_file, log_level, log_path, inheritor_apps, ignore_proxy, data_dir):
         self.initialized = False
         self.ignore_proxy = ignore_proxy
         # Set up logger namespace and levels
@@ -57,6 +57,9 @@ class ClientApplication(object):
         self.log.debug("Application %s: Global config loaded %s" % (self.__class__.__name__, self.config))
         self.application_list = inheritor_apps
         self.log.debug("Application %s: Inherited apps loaded as %s" % (self.__class__.__name__, inheritor_apps))
+
+        if data_dir:
+            self.data_file = os.path.join(data_dir, 'application.data')
 
     def singleton_init(self):
         flavor_id = self.__class__.__name__
