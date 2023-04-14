@@ -22,6 +22,7 @@ from common.configreader import get_full_config
 from common.path import DATA_PATH
 from random import randint
 from six import string_types
+from logging.handlers import RotatingFileHandler
 
 
 class ClientApplication(object):
@@ -31,7 +32,16 @@ class ClientApplication(object):
     singleton = False
     random_run_delay = True
 
-    def __init__(self, config_file, log_level, log_path, inheritor_apps, ignore_proxy, data_dir):
+    def __init__(
+        self,
+        config_file,
+        log_level,
+        log_path,
+        inheritor_apps,
+        ignore_proxy,
+        log_max_bytes=None,
+        log_backup_count=5
+    ):
         self.initialized = False
         self.ignore_proxy = ignore_proxy
         # Set up logger namespace and levels
@@ -42,7 +52,11 @@ class ClientApplication(object):
         console_handler.setFormatter(formatter)
         self.log.setLevel(log_level)
         if log_path:
-            file_handler = logging.FileHandler(os.path.join(log_path, "%s.log" % self.__class__.__name__))
+            log_filepath = os.path.join(log_path, "%s.log" % self.__class__.__name__)
+            if log_max_bytes:
+                file_handler = RotatingFileHandler(log_filepath, maxBytes=log_max_bytes, backupCount=log_backup_count)
+            else:
+                file_handler = logging.FileHandler(log_filepath)
             file_handler.setFormatter(formatter)
             self.log.addHandler(file_handler)
         else:
@@ -57,9 +71,6 @@ class ClientApplication(object):
         self.log.debug("Application %s: Global config loaded %s" % (self.__class__.__name__, self.config))
         self.application_list = inheritor_apps
         self.log.debug("Application %s: Inherited apps loaded as %s" % (self.__class__.__name__, inheritor_apps))
-
-        if data_dir:
-            self.data_file = os.path.join(data_dir, 'application.data')
 
     def singleton_init(self):
         flavor_id = self.__class__.__name__

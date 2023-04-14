@@ -17,7 +17,6 @@ sys.path.append(DEPENDENCIES_PATH)
 import app
 from common.extargparse import *
 from common.modloader import get_inheritors
-from app import scanner,ticker
 
 
 def available_apps(app_name):
@@ -39,6 +38,12 @@ if __name__ == "__main__":
 
     parser.add_argument('--logpath', type=log_file_valid_accessible, nargs='?', default=None,
                         help='Application log file to save logger output')
+
+    parser.add_argument('--log_max_bytes', type=int, nargs='?', default=None,
+                        help='Max log file size (bytes)')
+
+    parser.add_argument('--log_backup_count', type=int, nargs='?', default=None,
+                        help='Max log file count')
 
     parser.add_argument('--config', type=config_file_exists_accessible, nargs='?', default=DEFAULT_CONFIG_PATH,
                         help='Application config file location')
@@ -65,6 +70,8 @@ if __name__ == "__main__":
         'config_file': args.config,
         'log_level': args.loglevel,
         'log_path': args.logpath,
+        'log_max_bytes': args.log_max_bytes,
+        'log_backup_count': args.log_backup_count,
         'ignore_proxy': args.ignore_proxy,
         'inheritor_apps': inheritors,
         'data_dir': args.data_dir
