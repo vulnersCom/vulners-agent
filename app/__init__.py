@@ -51,6 +51,12 @@ class ClientApplication(object):
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
         self.log.setLevel(log_level)
+
+        full_config = get_full_config(config_file)
+        if not log_max_bytes:
+            log_max_bytes = int(full_config.get('DEFAULT', {}).get('log_max_bytes', 0))
+            log_backup_count = int(full_config.get('DEFAULT', {}).get('log_backup_count', 0))
+
         if log_path:
             log_filepath = os.path.join(log_path, "%s.log" % self.__class__.__name__)
             if log_max_bytes:
@@ -61,12 +67,11 @@ class ClientApplication(object):
             self.log.addHandler(file_handler)
         else:
             self.log.addHandler(console_handler)
-        #
+
         self.log.debug("Application %s: Logger configured" % self.__class__.__name__)
         # Initing
         self.log.debug("Application %s: Init with config file %s" % (self.__class__.__name__, config_file))
         # Set up config file data
-        full_config = get_full_config(config_file)
         self.config = full_config.get(self.__class__.__name__, full_config.get('DEFAULT'))
         self.log.debug("Application %s: Global config loaded %s" % (self.__class__.__name__, self.config))
         self.application_list = inheritor_apps
