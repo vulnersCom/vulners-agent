@@ -39,6 +39,7 @@ class ClientApplication(object):
         log_path,
         inheritor_apps,
         ignore_proxy,
+        data_dir,
         log_max_bytes=None,
         log_backup_count=5
     ):
@@ -76,6 +77,9 @@ class ClientApplication(object):
         self.log.debug("Application %s: Global config loaded %s" % (self.__class__.__name__, self.config))
         self.application_list = inheritor_apps
         self.log.debug("Application %s: Inherited apps loaded as %s" % (self.__class__.__name__, inheritor_apps))
+
+        if data_dir:
+            self.data_file = os.path.join(data_dir, 'application.data')
 
     def singleton_init(self):
         flavor_id = self.__class__.__name__
