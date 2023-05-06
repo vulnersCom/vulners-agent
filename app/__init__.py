@@ -252,10 +252,12 @@ class ClientApplication(object):
             self.vulners = AgentAPI(**agent_params)
         except requests.ConnectionError as connection_error:
             message = 'Failed to establish connection to Vulners host at %s: %s' % (
-            AgentAPI.vulners_hostname, connection_error)
+                AgentAPI.vulners_hostname, connection_error
+            )
             self.log.error(message)
             raise EnvironmentError(
-                'Failed to establish connection to Vulners host at %s' % AgentAPI.vulners_hostname)
+                'Failed to establish connection to Vulners host at %s' % AgentAPI.vulners_hostname
+            )
         self.log.debug("Application %s: Init Vulners API with key %s" % (self.__class__.__name__, api_key))
 
         run_data = {

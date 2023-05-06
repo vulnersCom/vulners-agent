@@ -21,17 +21,17 @@ class AgentAPI(vulners.Vulners):
     # Extension for Agent interfaces.
 
     api_endpoints = {
-        'apiKey': '/api/v3/apiKey/valid/',
-        'audit': '/api/v3/audit/audit/',
-        'agent_register': '/api/v3/agent/register/',
-        'agent_update': '/api/v3/agent/update/',
-        'agent_audit': '/api/v3/agent/audit/',
-        'agent_winsoftware': '/api/v3/agent/winsoftware',
-        'supported_os': '/api/v3/agent/supported/'
+        "apiKey": "/api/v3/apiKey/valid/",
+        "audit": "/api/v3/audit/audit/",
+        "agent_register": "/api/v3/agent/register/",
+        "agent_update": "/api/v3/agent/update/",
+        "agent_audit": "/api/v3/agent/audit/",
+        "agent_winsoftware": "/api/v3/agent/winsoftware",
+        "supported_os": "/api/v3/agent/supported/",
     }
 
     def supported_os(self):
-        return self.vulners_get_request('supported_os', {})
+        return self.vulners_get_request("supported_os", {})
 
     def agent_register(self, agent_type, agent_version):
         """
@@ -42,11 +42,23 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("agent_type expected to be a string")
         if not isinstance(agent_version, string_types):
             raise TypeError("agent_version expected to be a string")
-        return self.vulners_post_request('agent_register', {"agentType": agent_type, 'agentVersion': agent_version})
+        return self.vulners_post_request(
+            "agent_register", {"agentType": agent_type, "agentVersion": agent_version}
+        )
 
     def agent_update(
-            self, agent_id, agent_type, agent_version, ipaddress, fqdn, macaddress,
-            os_name, os_version, os_family, interface_list
+        self,
+        agent_id,
+        agent_type,
+        agent_version,
+        ipaddress,
+        fqdn,
+        macaddress,
+        os_name,
+        os_version,
+        os_family,
+        interface_list,
+        tag
     ):
         """
         Tech Agent update information method
@@ -73,19 +85,20 @@ class AgentAPI(vulners.Vulners):
         if not isinstance(interface_list, list):
             raise TypeError("interface_list expected to be a list")
         return self.vulners_post_request(
-            'agent_update',
+            "agent_update",
             {
-                'agentType': agent_type,
-                'agentVersion': agent_version,
-                'agentId': agent_id,
-                'ipaddress': ipaddress,
-                'fqdn': fqdn,
-                'macaddress': macaddress,
-                'OSName': os_name,
-                'OSVersion': os_version,
-                'OSFamily': os_family,
-                'interfaces': interface_list,
-            }
+                "agentType": agent_type,
+                "agentVersion": agent_version,
+                "agentId": agent_id,
+                "ipaddress": ipaddress,
+                "fqdn": fqdn,
+                "macaddress": macaddress,
+                "OSName": os_name,
+                "OSVersion": os_version,
+                "OSFamily": os_family,
+                "interfaces": interface_list,
+                "tag": tag,
+            },
         )
 
     def agent_audit(self, agent_id, os, os_version, package):
@@ -106,9 +119,10 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("OS Version expected to be a string")
         if not isinstance(package, (list, set)):
             raise TypeError("Package expected to be a list or set")
-        return self.vulners_post_request('agent_audit',
-                                         {"os": os, 'version': os_version,
-                                          'package': package, 'agentId': agent_id})
+        return self.vulners_post_request(
+            "agent_audit",
+            {"os": os, "version": os_version, "package": package, "agentId": agent_id},
+        )
 
     def agent_winaudit(self, agent_id, os, os_version, software, kb_list):
         """
@@ -126,8 +140,13 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("Software expected to be a list or set")
         if not isinstance(kb_list, (list, set)):
             raise TypeError("Installed KB expected to be a list or set")
-        return self.vulners_post_request('agent_winsoftware', {"os": os,
-                                                               'os_version': os_version,
-                                                               'software': software,
-                                                               'kb_list': kb_list,
-                                                               'agentId': agent_id})
+        return self.vulners_post_request(
+            "agent_winsoftware",
+            {
+                "os": os,
+                "os_version": os_version,
+                "software": software,
+                "kb_list": kb_list,
+                "agentId": agent_id,
+            },
+        )
