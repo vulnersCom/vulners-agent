@@ -98,6 +98,7 @@ ip_address = 10.0.0.1
 fqdn = my.host.example.com
 mac_address = 00:01:02:03:04:06
 interval = 3h30m
+tags = tag1,tag2 ;comma separated user defined values
 ```
 
 ## Installation and configuration for Windows
