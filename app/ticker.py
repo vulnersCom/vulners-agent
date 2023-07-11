@@ -123,7 +123,7 @@ class Ticker(ClientApplication):
             os_version=os_version,
             os_family=os_family,
             interface_list=osdetect.get_interface_list(),
-            tag=self.config.get("tag")
+            tags=self.config.get("tags")
         )
         if "agent" not in update_result:
             if update_result.get("errorCode") == 163:

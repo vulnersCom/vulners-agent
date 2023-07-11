@@ -58,7 +58,7 @@ class AgentAPI(vulners.Vulners):
         os_version,
         os_family,
         interface_list,
-        tag
+        tags
     ):
         """
         Tech Agent update information method
@@ -97,7 +97,7 @@ class AgentAPI(vulners.Vulners):
                 "OSVersion": os_version,
                 "OSFamily": os_family,
                 "interfaces": interface_list,
-                "tag": tag,
+                "tags": tags,
             },
         )
 
