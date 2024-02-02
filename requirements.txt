@@ -1,5 +1,5 @@
-vulners==1.5.11
-six==1.15.0
+vulners==2.1.5
+six<2.0.0
 distro==1.5.0
 getmac==0.8.1
 ifaddr==0.1.7

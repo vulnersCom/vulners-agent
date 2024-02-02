@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "vulners-agent"
+version = "3.0.0"
+description = "Vulners agent is an open source solution, which provides vulnerability assessment for Linux-based and Windows operating systems. (https://vulners.com)"
+authors = ["Vulners Team"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<4.0"
+vulners = "^2.1.5"
+
+[tool.poetry.dev-dependencies]
+black = "^22.12.0"
+flake8 = "^7.0.0"
+isort = "^5.13.2"
+deptry = "^0.12.0"
+vulture = "^2.9.1"
+mypy = "^1.6.1"
+bandit = "^1.7.5"
+
+[tool.black]
+line-length = 119
+target-version = ['py311']
+
+[tool.flake8]
+max-line-length = 119
+exclude = [
+    ".git",
+    ".venv",
+    "pycache",
+    "__init__.py",
+    ".mypy_cache",
+    ".pytest_cache"
+]
+
+[tool.isort]
+profile = "black"
+line_length = 119
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

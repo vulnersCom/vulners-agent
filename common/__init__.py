@@ -1,3 +1,3 @@
 # Agent version
-__version__ = "2.2.4"
+__version__ = "2.3.0"
 __agent_type__ = 'Vulners Agent'
