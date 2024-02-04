@@ -8,19 +8,20 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
-import re
-
-import distro
-from getmac import get_mac_address
-import socket
-from common.oscommands import execute
-import ifaddr
-from collections import defaultdict
 import concurrent.futures
 import platform
+import re
+import socket
+from collections import defaultdict
+
+import distro
+import ifaddr
+from getmac import get_mac_address
+
+from common.oscommands import execute
 from common.stringops import remove_non_ascii
 
-LOOPBACK = ['127.0.0.1', '0:0:0:0:0:0:0:1']
+LOOPBACK = ["127.0.0.1", "0:0:0:0:0:0:0:1"]
 
 
 def get_os_parameters():
@@ -29,8 +30,9 @@ def get_os_parameters():
     # Get OS family
     platform_family = platform.system()
 
-    if platform_family == 'Windows':
+    if platform_family == "Windows":
         from common.winutils import get_windows_data
+
         win_version = get_windows_data()
         return remove_non_ascii(win_version["name"]), win_version["version"], platform_family
 
@@ -40,11 +42,11 @@ def get_os_parameters():
     # In most cases this info will be valid, but there is some list of exclusions
 
     # If it's a Darwin, this is probably Mac OS. We need to get visible version using 'sw_vers' command
-    if platform_id.lower() == 'darwin':
-        os_params = execute('sw_vers').splitlines()
+    if platform_id.lower() == "darwin":
+        os_params = execute("sw_vers").splitlines()
         platform_id = os_params[0].split(":")[1].strip()
         platform_version = os_params[1].split(":")[1].strip()
-        return platform_id, platform_version, 'macos'
+        return platform_id, platform_version, "macos"
 
     if platform_id == "altlinux":
         platform_id = "alt linux"
@@ -55,19 +57,16 @@ def get_os_parameters():
 
 
 def _parse_altlinux_version(platform_version: str) -> str:
-    match = re.search("^(?P<major>\d+)\.", platform_version)
+    match = re.search(r"^(?P<major>\d+)\.", platform_version)
     return match.group("major")
 
 
 def get_interface_data(interface_name, ipaddress):
-    macaddress = (get_mac_address(interface=interface_name) or get_mac_address(ip=ipaddress,
-                                                                               network_request=True) or "NONE")
+    macaddress = (
+        get_mac_address(interface=interface_name) or get_mac_address(ip=ipaddress, network_request=True) or "NONE"
+    )
     macaddress = macaddress.upper()
-    return {
-        "ifaceName": interface_name,
-        'ipaddress': ipaddress,
-        'macaddress': macaddress
-    }
+    return {"ifaceName": interface_name, "ipaddress": ipaddress, "macaddress": macaddress}
 
 
 def get_interface_list():
@@ -92,8 +91,10 @@ def get_interface_list():
     interface_list = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(active_interfaces)) as executor:
-        app_exec_pool = [executor.submit(get_interface_data, interface_name, active_interfaces[interface_name][0]) for
-                         interface_name in active_interfaces]
+        app_exec_pool = [
+            executor.submit(get_interface_data, interface_name, active_interfaces[interface_name][0])
+            for interface_name in active_interfaces
+        ]
         for future in concurrent.futures.as_completed(app_exec_pool):
             interface_list.append(future.result())
     for interface in interface_list:
@@ -105,8 +106,8 @@ def get_interface_list():
 def get_ip_mac_fqdn():
     interfaces = get_interface_list()
 
-    primary_interface = sorted(interfaces, key=lambda k: k['ifaceName'])[0]
-    ip_address = primary_interface['ipaddress']
+    primary_interface = sorted(interfaces, key=lambda k: k["ifaceName"])[0]
+    ip_address = primary_interface["ipaddress"]
     fqdn = socket.getaddrinfo(socket.gethostname(), 0, 0, 0, 0, socket.AI_CANONNAME)[0][3]
-    mac_address = primary_interface['macaddress']
+    mac_address = primary_interface["macaddress"]
     return ip_address, mac_address, fqdn

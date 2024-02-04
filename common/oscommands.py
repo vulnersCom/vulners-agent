@@ -8,19 +8,21 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
-import subprocess
-import platform
 import os
+import platform
+import subprocess
 from time import sleep
 
+
 def find_linux_executable(prog_filename):
-    bdirs = os.path.expandvars('$PATH').split(":")
+    bdirs = os.path.expandvars("$PATH").split(":")
     paths_tried = []
     for d in bdirs:
         p = os.path.expandvars(os.path.join(d, prog_filename))
         paths_tried.append(p)
         if os.path.exists(p):
             return p
+
 
 def execute(cmd):
 
@@ -29,13 +31,18 @@ def execute(cmd):
 
     def _execute_cmd(command):
 
-
-        if os.name == 'nt' or platform.system() == 'Windows':
+        if os.name == "nt" or platform.system() == "Windows":
             # set stdin, out, err all to PIPE to get results (other than None) after run the Popen() instance
             p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         else:
             # Use bash if it exist
-            p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, executable=find_linux_executable('bash'))
+            p = subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=True,
+                executable=find_linux_executable("bash"),
+            )
 
         # the Popen() instance starts running once instantiated (??)
         # additionally, communicate(), or poll() and wait process to terminate
@@ -49,11 +56,11 @@ def execute(cmd):
         # (e.g. when code is automatically converted with 2to3).
         # return iter(p.stdout.readline, b'')
 
-        for line in iter(p.stdout.readline, b''):
-                yield line
+        for line in iter(p.stdout.readline, b""):
+            yield line
         while p.poll() is None:
             # Don't waste CPU-cycles
-            sleep(.1)
+            sleep(0.1)
         # Empty STDERR buffer
         err = p.stderr.read()
         if p.returncode != 0:

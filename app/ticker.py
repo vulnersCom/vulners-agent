@@ -8,28 +8,31 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
-import six
-import time
-import pytz
-import arrow
-import datetime
 import concurrent.futures
-from app import ClientApplication
-from common import __version__ as __agent_version__, __agent_type__
-from common import osdetect
+import datetime
+import time
+
+import arrow
+import pytz
+import six
 from pytimeparse.timeparse import timeparse
+
+from app import ClientApplication
+from common import __agent_type__
+from common import __version__ as __agent_version__
+from common import osdetect
 
 
 class Ticker(ClientApplication):
     singleton = True
-    minimum_task_interval = '5m'
+    minimum_task_interval = "5m"
     max_threads = 10
     schedule = [
         {
             "app_name": "Scanner",
             "interval": "1h",
             "run_parameters": {},
-            "last_run": arrow.get(1970, 12, 12).timestamp,
+            "last_run": arrow.get(1970, 12, 12).timestamp(),
             "run_now": False,
         }
     ]
@@ -75,9 +78,7 @@ class Ticker(ClientApplication):
 
         # Run tasks in different threads. Usually we don't need results of run_now.
         app_run_results = []
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=self.max_threads
-        ) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
             app_exec_pool = [
                 executor.submit(self.apps(app_name).run_app, app_run_parameters)
                 for app_name, app_run_parameters in application_run_list
@@ -92,23 +93,18 @@ class Ticker(ClientApplication):
         agent_id = self.get_var("agent_id", namespace="shared")
         if not agent_id:
             self.log.debug("Unregistered agent. Gathering Agent ID from Vulners")
-            registration = self.vulners.agent_register(
-                agent_type=__agent_type__, agent_version=__agent_version__
-            )
+            registration = self.vulners.agent_register(agent_type=__agent_type__, agent_version=__agent_version__)
             if "agentId" not in registration:
                 message = "Failed to get Agent ID from Vulners API: %s" % registration
                 self.log.error(message)
                 raise AssertionError(message)
-            agent_id = self.set_var(
-                "agent_id", registration["agentId"], namespace="shared"
-            )
+            agent_id = self.set_var("agent_id", registration["agentId"], namespace="shared")
             self.log.debug("Registered as %s" % registration["agentId"])
         # Update agent information, forming and sending 'ping' data
         self.log.debug("Agent ID: %s" % agent_id)
         ip_address, mac_address, fqdn = osdetect.get_ip_mac_fqdn()
         self.log.debug(
-            "IP Address detected as: '%s' with MAC '%s' and Hostname '%s'"
-            % (ip_address, mac_address, fqdn)
+            "IP Address detected as: '%s' with MAC '%s' and Hostname '%s'" % (ip_address, mac_address, fqdn)
         )
         os_name, os_version, os_family = osdetect.get_os_parameters()
         self.log.debug("OS Name: '%s' with version '%s'" % (os_name, os_version))
@@ -123,7 +119,7 @@ class Ticker(ClientApplication):
             os_version=os_version,
             os_family=os_family,
             interface_list=osdetect.get_interface_list(),
-            tags=self.config.get("tags")
+            tags=self.config.get("tags"),
         )
         if "agent" not in update_result:
             if update_result.get("errorCode") == 163:
@@ -132,17 +128,14 @@ class Ticker(ClientApplication):
                 return
             # Unexpected error
             raise AssertionError(
-                "Failed to get agent data from Vulners host. Received Vulners response: %s"
-                % update_result
+                "Failed to get agent data from Vulners host. Received Vulners response: %s" % update_result
             )
         self.log.debug("Vulners Agent Update response: %s" % update_result)
         self.set_var("agent", update_result["agent"], namespace="shared")
         interval = self.config.get("interval")
         if interval:
             if not timeparse(interval):
-                raise AssertionError(
-                    'Invalid `interval` config option value. Examples - 32m, 2h32m, 3d2h32m'
-                )
+                raise AssertionError("Invalid `interval` config option value. Examples - 32m, 2h32m, 3d2h32m")
             self.schedule[0]["interval"] = interval
         self.log.debug("Starting to process schedule: %s" % self.schedule)
         schedule = self.process_schedule(self.schedule)

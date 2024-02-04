@@ -14,16 +14,12 @@ from six import string_types
 
 class AgentAPI(vulners.VulnersApi):
 
-    supported_os = vulners.base.Endpoint(
-        method="get",
-        url="/api/v3/agent/supported/",
-        params=[]
-    )
+    supported_os = vulners.base.Endpoint(method="get", url="/api/v3/agent/supported/", params=[])
 
     register_agent = vulners.base.Endpoint(
         method="post",
         url="/api/v3/agent/register/",
-        params=[("agentType", vulners.base.String()), ("agentVersion", vulners.base.String())]
+        params=[("agentType", vulners.base.String()), ("agentVersion", vulners.base.String())],
     )
 
     audit_agent = vulners.base.Endpoint(
@@ -34,7 +30,7 @@ class AgentAPI(vulners.VulnersApi):
             ("version", vulners.base.String()),
             ("package", vulners.base.List()),
             ("agentId", vulners.base.String()),
-        ]
+        ],
     )
 
     update_agent = vulners.base.Endpoint(
@@ -52,7 +48,7 @@ class AgentAPI(vulners.VulnersApi):
             ("OSFamily", vulners.base.String()),
             ("interfaces", vulners.base.List()),
             ("tags", vulners.base.String(allow_null=True)),
-        ]
+        ],
     )
 
     winsoftware_agent = vulners.base.Endpoint(
@@ -64,7 +60,7 @@ class AgentAPI(vulners.VulnersApi):
             ("software", vulners.base.String()),
             ("kb_list", vulners.base.List()),
             ("agentId", vulners.base.List()),
-        ]
+        ],
     )
 
     def agent_register(self, agent_type, agent_version):
@@ -76,9 +72,7 @@ class AgentAPI(vulners.VulnersApi):
             raise TypeError("agent_type expected to be a string")
         if not isinstance(agent_version, string_types):
             raise TypeError("agent_version expected to be a string")
-        return self.register_agent(
-            agentType=agent_type, agentVersion=agent_version
-        )
+        return self.register_agent(agentType=agent_type, agentVersion=agent_version)
 
     def agent_update(
         self,
@@ -92,7 +86,7 @@ class AgentAPI(vulners.VulnersApi):
         os_version,
         os_family,
         interface_list,
-        tags
+        tags,
     ):
         """
         Tech Agent update information method
@@ -129,7 +123,7 @@ class AgentAPI(vulners.VulnersApi):
             OSVersion=os_version,
             OSFamily=os_family,
             interfaces=interface_list,
-            tags=tags
+            tags=tags,
         )
 
     def agent_audit(self, agent_id, os, os_version, package):
@@ -174,10 +168,4 @@ class AgentAPI(vulners.VulnersApi):
         if not isinstance(kb_list, (list, set)):
             raise TypeError("Installed KB expected to be a list or set")
 
-        return self.agent_winaudit(
-            agent_id=agent_id,
-            os=os,
-            os_version=os_version,
-            software=software,
-            kb_list=kb_list
-        )
+        return self.agent_winaudit(agent_id=agent_id, os=os, os_version=os_version, software=software, kb_list=kb_list)
