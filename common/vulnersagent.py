@@ -12,26 +12,56 @@ import vulners
 from six import string_types
 
 
-class AgentAPI(vulners.Vulners):
+class AgentAPI(vulners.VulnersApi):
 
-    # Vulners API Hostname
-    vulners_hostname = "https://vulners.com"
+    supported_os = vulners.base.Endpoint(method="get", url="/api/v3/agent/supported/", params=[])
 
-    # Default URL's for the Vulners API.
-    # Extension for Agent interfaces.
+    register_agent = vulners.base.Endpoint(
+        method="post",
+        url="/api/v3/agent/register/",
+        params=[("agentType", vulners.base.String()), ("agentVersion", vulners.base.String())],
+    )
 
-    api_endpoints = {
-        "apiKey": "/api/v3/apiKey/valid/",
-        "audit": "/api/v3/audit/audit/",
-        "agent_register": "/api/v3/agent/register/",
-        "agent_update": "/api/v3/agent/update/",
-        "agent_audit": "/api/v3/agent/audit/",
-        "agent_winsoftware": "/api/v3/agent/winsoftware",
-        "supported_os": "/api/v3/agent/supported/",
-    }
+    audit_agent = vulners.base.Endpoint(
+        method="post",
+        url="/api/v3/agent/audit/",
+        params=[
+            ("os", vulners.base.String()),
+            ("version", vulners.base.String()),
+            ("package", vulners.base.List()),
+            ("agentId", vulners.base.String()),
+        ],
+    )
 
-    def supported_os(self):
-        return self.vulners_get_request("supported_os", {})
+    update_agent = vulners.base.Endpoint(
+        method="post",
+        url="/api/v3/agent/update/",
+        params=[
+            ("agentType", vulners.base.String()),
+            ("agentVersion", vulners.base.String()),
+            ("agentId", vulners.base.String()),
+            ("ipaddress", vulners.base.String()),
+            ("fqdn", vulners.base.String()),
+            ("macaddress", vulners.base.String()),
+            ("OSName", vulners.base.String()),
+            ("OSVersion", vulners.base.String()),
+            ("OSFamily", vulners.base.String()),
+            ("interfaces", vulners.base.List()),
+            ("tags", vulners.base.String(allow_null=True)),
+        ],
+    )
+
+    winsoftware_agent = vulners.base.Endpoint(
+        method="post",
+        url="/api/v3/agent/winsoftware",
+        params=[
+            ("os", vulners.base.String()),
+            ("os_version", vulners.base.String()),
+            ("software", vulners.base.String()),
+            ("kb_list", vulners.base.List()),
+            ("agentId", vulners.base.List()),
+        ],
+    )
 
     def agent_register(self, agent_type, agent_version):
         """
@@ -42,9 +72,7 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("agent_type expected to be a string")
         if not isinstance(agent_version, string_types):
             raise TypeError("agent_version expected to be a string")
-        return self.vulners_post_request(
-            "agent_register", {"agentType": agent_type, "agentVersion": agent_version}
-        )
+        return self.register_agent(agentType=agent_type, agentVersion=agent_version)
 
     def agent_update(
         self,
@@ -58,7 +86,7 @@ class AgentAPI(vulners.Vulners):
         os_version,
         os_family,
         interface_list,
-        tags
+        tags,
     ):
         """
         Tech Agent update information method
@@ -84,21 +112,18 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("os_family expected to be a string")
         if not isinstance(interface_list, list):
             raise TypeError("interface_list expected to be a list")
-        return self.vulners_post_request(
-            "agent_update",
-            {
-                "agentType": agent_type,
-                "agentVersion": agent_version,
-                "agentId": agent_id,
-                "ipaddress": ipaddress,
-                "fqdn": fqdn,
-                "macaddress": macaddress,
-                "OSName": os_name,
-                "OSVersion": os_version,
-                "OSFamily": os_family,
-                "interfaces": interface_list,
-                "tags": tags,
-            },
+        return self.update_agent(
+            agentType=agent_type,
+            agentVersion=agent_version,
+            agentId=agent_id,
+            ipaddress=ipaddress,
+            fqdn=fqdn,
+            macaddress=macaddress,
+            OSName=os_name,
+            OSVersion=os_version,
+            OSFamily=os_family,
+            interfaces=interface_list,
+            tags=tags,
         )
 
     def agent_audit(self, agent_id, os, os_version, package):
@@ -119,16 +144,18 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("OS Version expected to be a string")
         if not isinstance(package, (list, set)):
             raise TypeError("Package expected to be a list or set")
-        return self.vulners_post_request(
-            "agent_audit",
-            {"os": os, "version": os_version, "package": package, "agentId": agent_id},
-        )
+
+        return self.audit_agent(os=os, version=os_version, package=package, agentId=agent_id)
 
     def agent_winaudit(self, agent_id, os, os_version, software, kb_list):
         """
         Tech Agent Audit for Windows OS call
 
-        :return: {'packages':[LIST OF VULNERABLE PACKAGES], 'reasons':LIST OF REASONS, 'vulnerabilities':[LIST OF VULNERABILITY IDs]}
+        :return: {
+            'packages':[LIST OF VULNERABLE PACKAGES],
+            'reasons':LIST OF REASONS,
+            'vulnerabilities':[LIST OF VULNERABILITY IDs]
+        }
         """
         if not isinstance(agent_id, string_types) or not agent_id:
             raise TypeError("agent_id expected to be a non empty string")
@@ -140,13 +167,5 @@ class AgentAPI(vulners.Vulners):
             raise TypeError("Software expected to be a list or set")
         if not isinstance(kb_list, (list, set)):
             raise TypeError("Installed KB expected to be a list or set")
-        return self.vulners_post_request(
-            "agent_winsoftware",
-            {
-                "os": os,
-                "os_version": os_version,
-                "software": software,
-                "kb_list": kb_list,
-                "agentId": agent_id,
-            },
-        )
+
+        return self.agent_winaudit(agent_id=agent_id, os=os, os_version=os_version, software=software, kb_list=kb_list)

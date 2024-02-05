@@ -8,27 +8,29 @@
 #
 __author__ = "Kir Ermakov <isox@vulners.com>"
 
-import os
-import sys
-import logging
 import base64
 import json
-import requests
-import zlib
-import time
+import logging
+import os
+import sys
 import tempfile
-from common.vulnersagent import AgentAPI
+import time
+import zlib
+from logging.handlers import RotatingFileHandler
+from random import randint
+
+import requests
+from six import string_types
+
 from common.configreader import get_full_config
 from common.path import DATA_PATH
-from random import randint
-from six import string_types
-from logging.handlers import RotatingFileHandler
+from common.vulnersagent import AgentAPI
 
 
 class ClientApplication(object):
     if os.path.exists(DATA_PATH) is False:
         os.mkdir(DATA_PATH)
-    data_file = os.path.join(DATA_PATH, 'application.data')
+    data_file = os.path.join(DATA_PATH, "application.data")
     singleton = False
     random_run_delay = True
 
@@ -41,22 +43,22 @@ class ClientApplication(object):
         ignore_proxy,
         data_dir,
         log_max_bytes=None,
-        log_backup_count=5
+        log_backup_count=5,
     ):
         self.initialized = False
         self.ignore_proxy = ignore_proxy
         # Set up logger namespace and levels
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.propagate = False
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
         self.log.setLevel(log_level)
 
         full_config = get_full_config(config_file)
         if not log_max_bytes:
-            log_max_bytes = int(full_config.get('DEFAULT', {}).get('log_max_bytes', 0))
-            log_backup_count = int(full_config.get('DEFAULT', {}).get('log_backup_count', 0))
+            log_max_bytes = int(full_config.get("DEFAULT", {}).get("log_max_bytes", 0))
+            log_backup_count = int(full_config.get("DEFAULT", {}).get("log_backup_count", 0))
 
         if log_path:
             log_filepath = os.path.join(log_path, "%s.log" % self.__class__.__name__)
@@ -73,49 +75,54 @@ class ClientApplication(object):
         # Initing
         self.log.debug("Application %s: Init with config file %s" % (self.__class__.__name__, config_file))
         # Set up config file data
-        self.config = full_config.get(self.__class__.__name__, full_config.get('DEFAULT'))
+        self.config = full_config.get(self.__class__.__name__, full_config.get("DEFAULT"))
         self.log.debug("Application %s: Global config loaded %s" % (self.__class__.__name__, self.config))
         self.application_list = inheritor_apps
         self.log.debug("Application %s: Inherited apps loaded as %s" % (self.__class__.__name__, inheritor_apps))
 
         if data_dir:
-            self.data_file = os.path.join(data_dir, 'application.data')
+            self.data_file = os.path.join(data_dir, "application.data")
 
     def singleton_init(self):
         flavor_id = self.__class__.__name__
         self.initialized = False
 
-        basename = os.path.splitext(os.path.abspath(sys.argv[0]))[0].replace(
-            "/", "-").replace(":", "").replace("\\", "-") + '-%s' % flavor_id + '.lock'
+        basename = (
+            os.path.splitext(os.path.abspath(sys.argv[0]))[0].replace("/", "-").replace(":", "").replace("\\", "-")
+            + "-%s" % flavor_id
+            + ".lock"
+        )
 
-        self.lockfile = os.path.normpath(
-            tempfile.gettempdir() + '/' + basename)
+        self.lockfile = os.path.normpath(tempfile.gettempdir() + "/" + basename)
 
         self.log.debug("Application %s: SingleInstance lockfile: %s" % (self.__class__.__name__, self.lockfile))
-        if sys.platform == 'win32':
+        if sys.platform == "win32":
             try:
                 # file already exists, we try to remove (in case previous
                 # execution was interrupted)
                 if os.path.exists(self.lockfile):
                     os.unlink(self.lockfile)
-                self.fd = os.open(
-                    self.lockfile, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+                self.fd = os.open(self.lockfile, os.O_CREAT | os.O_EXCL | os.O_RDWR)
             except OSError:
                 err_type, e, tb = sys.exc_info()
                 if e.errno == 13:
-                    message = "Application %s: Another instance is already running, quitting." % self.__class__.__name__
+                    message = (
+                        "Application %s: Another instance is already running, quitting." % self.__class__.__name__
+                    )
                     self.log.error(message)
                     raise RuntimeError(message)
                 raise
         else:  # non Windows
             import fcntl
-            self.fp = open(self.lockfile, 'w')
+
+            self.fp = open(self.lockfile, "w")
             self.fp.flush()
             try:
                 fcntl.lockf(self.fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
                 message = "Application %s: Another instance of %s is already running, quitting." % (
-                    self.__class__.__name__, self.__class__.__name__
+                    self.__class__.__name__,
+                    self.__class__.__name__,
                 )
 
                 self.log.warning(message)
@@ -130,12 +137,13 @@ class ClientApplication(object):
             if not self.initialized:
                 return
             try:
-                if sys.platform == 'win32':
-                    if hasattr(self, 'fd'):
+                if sys.platform == "win32":
+                    if hasattr(self, "fd"):
                         os.close(self.fd)
                         os.unlink(self.lockfile)
                 else:
                     import fcntl
+
                     fcntl.lockf(self.fp, fcntl.LOCK_UN)
                     # os.close(self.fp)
                     if os.path.isfile(self.lockfile):
@@ -149,7 +157,7 @@ class ClientApplication(object):
         return self.application_list[app_name]
 
     def __encode_data(self, data):
-        return zlib.compress(base64.b16encode(json.dumps(data).encode('utf-8')))
+        return zlib.compress(base64.b16encode(json.dumps(data).encode("utf-8")))
 
     def __decode_data(self, encoded_data):
         try:
@@ -172,9 +180,11 @@ class ClientApplication(object):
             return self.__save_data_file(shared_data)
         return False
 
-    def set_var(self, var_name, var_value, namespace = None):
+    def set_var(self, var_name, var_value, namespace=None):
         if type(var_value) not in [int, float, dict, list, None] and not isinstance(var_value, string_types):
-            raise ValueError("Persistent variables can be only JSON compatible. Provided var type: %s" % type(var_value))
+            raise ValueError(
+                "Persistent variables can be only JSON compatible. Provided var type: %s" % type(var_value)
+            )
         namespace = namespace or self.__class__.__name__
         shared_data = self.__read_data_file() or {}
         shared_data[namespace] = shared_data.get(namespace) or {}
@@ -183,7 +193,7 @@ class ClientApplication(object):
         return var_value
 
     def __save_data_file(self, config_data):
-        with open(self.data_file, 'wb') as data_file:
+        with open(self.data_file, "wb") as data_file:
             data_file.write(self.__encode_data(config_data))
         self.log.debug("Application %s: Writing data file - %s" % (self.__class__.__name__, config_data))
         return True
@@ -195,24 +205,22 @@ class ClientApplication(object):
         if not os.path.isfile(self.data_file) or not os.access(self.data_file, os.R_OK):
             self.log.error("Can't access data file at %s." % self.data_file)
             return None
-        with open(self.data_file, 'rb') as data_file:
+        with open(self.data_file, "rb") as data_file:
             config_data = self.__decode_data(data_file.read())
         self.log.debug("Application %s: Reading data file - %s" % (self.__class__.__name__, config_data))
         return config_data
 
-    def countdown(self, sleep_time, step=1, msg='Sleeping'):  # in seconds
+    def countdown(self, sleep_time, step=1, msg="Sleeping"):  # in seconds
         try:
-            pad_str = ' ' * len('%d' % step)
+            pad_str = " " * len("%d" % step)
             for i in range(sleep_time, 0, -step):
                 self.log.debug(
-                    'Application %s: %s for the next %s seconds %s' % (
-                        self.__class__.__name__, msg, i, pad_str
-                    )
+                    "Application %s: %s for the next %s seconds %s" % (self.__class__.__name__, msg, i, pad_str)
                 )
 
                 time.sleep(step)
         except KeyboardInterrupt:
-            self.log.debug('Application %s: Countdown interrupted' % self.__class__.__name__)
+            self.log.debug("Application %s: Countdown interrupted" % self.__class__.__name__)
             time.sleep(1)
             return
 
@@ -225,11 +233,11 @@ class ClientApplication(object):
         #
         if self.random_run_delay:
             # Delay up to 5 minutes for running app
-            random_sleep = randint(0, 60*5)
+            random_sleep = randint(0, 60 * 5)
+            random_sleep = 3
             self.log.info(
-                "Application %s: Waiting for queue to perform action - estimated waiting time is %s seconds" % (
-                    self.__class__.__name__, random_sleep
-                )
+                "Application %s: Waiting for queue to perform action - estimated waiting time is %s seconds"
+                % (self.__class__.__name__, random_sleep)
             )
             self.countdown(random_sleep)
         #
@@ -237,50 +245,51 @@ class ClientApplication(object):
         # It placed here buti not in __init__ because of /api/v3/apiKey/valid/ call
         # Whet all agents all over the world are trying to check key for the validity - backend can die
         # So it's lazy init AFTER run delay
-        AgentAPI.vulners_hostname = self.config.get('vulners_host') or 'https://vulners.com'
-        api_key = self.config.get('api_key')
-        agent_params = {'api_key': api_key}
+        AgentAPI.vulners_hostname = self.config.get("vulners_host") or "https://vulners.com"
+        api_key = self.config.get("api_key")
+        agent_params = {"api_key": api_key}
 
         if self.ignore_proxy is False:
-            agent_params.update({
-                'proxies': {
-                    'http': self.config.get('http_proxy') or os.environ.get('HTTP_PROXY'),
-                    'https': self.config.get('https_proxy') or os.environ.get('HTTPS_PROXY')
+            agent_params.update(
+                {
+                    "proxies": {
+                        "http": self.config.get("http_proxy") or os.environ.get("HTTP_PROXY"),
+                        "https": self.config.get("https_proxy") or os.environ.get("HTTPS_PROXY"),
+                    }
                 }
-            })
+            )
         try:
             self.vulners = AgentAPI(**agent_params)
         except requests.ConnectionError as connection_error:
-            message = 'Failed to establish connection to Vulners host at %s: %s' % (
-                AgentAPI.vulners_hostname, connection_error
+            message = "Failed to establish connection to Vulners host at %s: %s" % (
+                AgentAPI.vulners_hostname,
+                connection_error,
             )
             self.log.error(message)
-            raise EnvironmentError(
-                'Failed to establish connection to Vulners host at %s' % AgentAPI.vulners_hostname
-            )
+            raise EnvironmentError("Failed to establish connection to Vulners host at %s" % AgentAPI.vulners_hostname)
         self.log.debug("Application %s: Init Vulners API with key %s" % (self.__class__.__name__, api_key))
 
         run_data = {
-            'app_name': self.__class__.__name__,
-            'run_parameters': parameters,
-            'run_result': None,
-            'success': False,
-            'exception': None,
-            'exectime': 0,
+            "app_name": self.__class__.__name__,
+            "run_parameters": parameters,
+            "run_result": None,
+            "success": False,
+            "exception": None,
+            "exectime": 0,
         }
 
         start_time = int(round(time.time() * 1000))
         try:
             run_result = self.run(**parameters)
             self.log.debug("Application %s: Run finished with no exceptions" % self.__class__.__name__)
-            run_data['success'] = True
-            run_data['run_result'] = run_result
+            run_data["success"] = True
+            run_data["run_result"] = run_result
         except Exception as exc:
             self.log.exception("Failed running application %s with Excpention:\n %s" % (self.__class__.__name__, exc))
-            run_data['success'] = False
-            run_data['exception'] = "%s" % exc
+            run_data["success"] = False
+            run_data["exception"] = "%s" % exc
         end_time = int(round(time.time() * 1000))
-        run_data['exectime'] = end_time - start_time
+        run_data["exectime"] = end_time - start_time
         self.log.debug("Application %s: Run complete: %s" % (self.__class__.__name__, run_data))
         return run_data
 

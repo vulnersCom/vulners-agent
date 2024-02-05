@@ -58,9 +58,10 @@ deb http://repo.vulners.com/debian focal main
 ### Source code (NOT recommended)
 You could clone the source code of a package and perform scans using Python. According to best practices, this should be done in a virtual environment:
 
-* install requirements.txt with ```pip3 install -r vulners-agent/requirements.txt```,
-* configure the agent as described below, 
-* run ```python3 vulners-agent/application --app Scanner```.
+* install poetry as it's described on official website - https://python-poetry.org/docs/
+* install requirements ```poetry install --no-root```,
+* configure the agent as described below
+* run ```poetry run ./application.py --app Scanner```.
 
 ## Configuration for Linux-based operating systems
 Now, you have to generate an API key to register the agent. [Log in](https://vulners.com/userinfo) to Vulners, go to the userinfo space and click on the API KEYS tab. In the "Scope" field, select "scan", click SAVE and then copy the generated key. The result should look something like this:

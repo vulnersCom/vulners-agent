@@ -11,53 +11,55 @@ __author__ = "Kir Ermakov <isox@vulners.com>"
 import argparse
 import logging
 import os
-from os import access, W_OK, R_OK
+from os import R_OK, W_OK, access
 
+LOG_LEVEL_STRINGS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
 
-LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 
 def log_level_string_to_int(log_level_string):
     if not log_level_string in LOG_LEVEL_STRINGS:
-        message = 'invalid choice: {0} (choose from {1})'.format(log_level_string, LOG_LEVEL_STRINGS)
+        message = "invalid choice: {0} (choose from {1})".format(log_level_string, LOG_LEVEL_STRINGS)
         raise argparse.ArgumentTypeError(message)
     log_level_int = getattr(logging, log_level_string, logging.INFO)
     # check the logging log_level_choices have not changed from our expected values
     assert isinstance(log_level_int, int)
     return log_level_int
 
+
 def log_file_valid_accessible(log_path_name):
     if not os.path.exists(log_path_name) or not access(log_path_name, W_OK):
-        message = 'invalid file path: {0} Error: {1}'.format(log_path_name, "Path do not exist or is not write accessible.")
+        message = "invalid file path: {0} Error: {1}".format(
+            log_path_name, "Path do not exist or is not write accessible."
+        )
         raise argparse.ArgumentTypeError(message)
     return log_path_name
+
 
 def config_file_exists_accessible(config_file_path_name):
 
     if not os.path.exists(config_file_path_name):
-        message = 'invalid file path: {0} Error: {1}'.format(config_file_path_name,
-                                                             "File do not exist.")
+        message = "invalid file path: {0} Error: {1}".format(config_file_path_name, "File do not exist.")
         raise argparse.ArgumentTypeError(message)
 
     if not access(config_file_path_name, R_OK):
-        message = 'invalid file path: {0} Error: {1}'.format(config_file_path_name,
-                                                             "File is not read accessible.")
+        message = "invalid file path: {0} Error: {1}".format(config_file_path_name, "File is not read accessible.")
         raise argparse.ArgumentTypeError(message)
 
     return config_file_path_name
 
+
 def data_dir_exists_accessible(data_dir_name):
 
     if not os.path.exists(data_dir_name):
-        message = 'invalid file path: {0} Error: {1}'.format(data_dir_name,
-                                                             "Directory do not exist.")
+        message = "invalid file path: {0} Error: {1}".format(data_dir_name, "Directory do not exist.")
         raise argparse.ArgumentTypeError(message)
 
     if not access(data_dir_name, W_OK):
-        message = 'invalid file path: {0} Error: {1}'.format(data_dir_name,
-                                                             "Directory is not accessible.")
+        message = "invalid file path: {0} Error: {1}".format(data_dir_name, "Directory is not accessible.")
         raise argparse.ArgumentTypeError(message)
 
     return data_dir_name
+
 
 class StoreDictKeyPair(argparse.Action):
     def __init__(self, option_strings, dest, nargs=None, **kwargs):

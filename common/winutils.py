@@ -1,9 +1,11 @@
-import winreg
+import ctypes
 import re
+import winreg
+
 import pythoncom
 import win32com.client
-import ctypes
 import wmi
+
 from common.stringops import remove_non_ascii
 
 
@@ -22,7 +24,8 @@ def get_windows_data():
             ("dwMinorVersion", ctypes.c_int),
             ("dwBuildNumber", ctypes.c_int),
             ("dwPlatformId", ctypes.c_int),
-            ("szCSDVersion", ctypes.c_char * 128)]
+            ("szCSDVersion", ctypes.c_char * 128),
+        ]
 
     GetVersionEx = getattr(ctypes.windll.kernel32, "GetVersionExA")
     version = OSVersionInfo()
@@ -73,10 +76,7 @@ def get_windows_updates():
         update_code = updates_pattern.findall(update_str)
         installed_kbs = installed_kbs.union(update_code)
 
-    return list(missing_kbs), \
-           list(missing_updates), \
-           list(installed_kbs), \
-           list(installed_updates)
+    return list(missing_kbs), list(missing_updates), list(installed_kbs), list(installed_updates)
 
 
 def enumerate_register_subkeys(key):
@@ -116,7 +116,7 @@ def traverse_registry_tree(hkey, keypath, reg_dict):
 def get_windows_installed_software():
     registry_paths = [
         r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
-        r"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+        r"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
     ]
     reg_dict = {}
     software_enumeration = {}
