@@ -245,9 +245,10 @@ class ClientApplication(object):
         # It placed here buti not in __init__ because of /api/v3/apiKey/valid/ call
         # Whet all agents all over the world are trying to check key for the validity - backend can die
         # So it's lazy init AFTER run delay
-        AgentAPI.vulners_hostname = self.config.get("vulners_host") or "https://vulners.com"
+
         api_key = self.config.get("api_key")
         agent_params = {"api_key": api_key}
+        agent_params['server_url'] = self.config.get("vulners_host") or "https://vulners.com"
 
         if self.ignore_proxy is False:
             agent_params.update(
