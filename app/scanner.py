@@ -22,13 +22,13 @@ class Scanner(ClientApplication):
             "packages": """rpm -qa --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\\n'""",
         },
         "deb": {
-            "packages": """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\\n'|awk '($1 == "install") && ($2 == "ok") {print $4" "$5" "$6}'""",
+            "packages": """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\n'|awk '($1 == "install" || "hold") && ($2 == "ok") {print $4" "$5" "$6}'""",
         },
         "apk": {
             "packages": """apk list -I""",
         },
         "apt": {
-            "packages": """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\n'|awk '($1 == "install") && ($2 == "ok") {print $4" "$5" "$6}'"""
+            "packages": """dpkg-query -W -f='${Status} ${Package} ${Version} ${Architecture}\n'|awk '($1 == "install" || "hold") && ($2 == "ok") {print $4" "$5" "$6}'"""
         },
     }
 
