@@ -234,7 +234,6 @@ class ClientApplication(object):
         if self.random_run_delay:
             # Delay up to 5 minutes for running app
             random_sleep = randint(0, 60 * 5)
-            random_sleep = 3
             self.log.info(
                 "Application %s: Waiting for queue to perform action - estimated waiting time is %s seconds"
                 % (self.__class__.__name__, random_sleep)
