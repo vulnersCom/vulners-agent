@@ -38,11 +38,14 @@ class Scanner(ClientApplication):
 
         active_kernel = oscommands.execute("uname -r")
 
+        # Package is: linux-headers-6.8.0-50-generic 6.8.0-50.51 amd64
+        # Filtering disabled kernels
         packages = [
             package
             for package in package_list
-            if not (
-                (package.startswith("kernel-") and package != "kernel-%s" % active_kernel) or (package == "Listing...")
+            if not (package == "Listing..." or
+               (package.startswith("kernel-") and not package.startswith("kernel-%s" % active_kernel)) or
+               (package.startswith("linux-image-") and not package.startswith("linux-image-%s" % active_kernel))
             )
         ]
         agent_id = self.get_var("agent_id", namespace="shared")
